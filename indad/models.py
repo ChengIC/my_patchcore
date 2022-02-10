@@ -123,6 +123,38 @@ class SPADE(KNNExtractor):
 		for idx, fmap in enumerate(self.feature_maps):
 			self.feature_maps[idx] = torch.vstack(fmap)
 
+		return self.z_lib, self.k, self.image_size, self.feature_maps, self.blur
+
+	def inference(self, sample, z_lib, k, image_size, feature_mapss, blur):
+		self.z_lib = z_lib
+		self.k = k
+		self.image_size = image_size
+		self.feature_maps = feature_mapss
+		self.blur = blur
+
+		feature_maps, z = self(sample)
+
+		distances = torch.linalg.norm(self.z_lib - z, dim=1)
+		values, indices = torch.topk(distances.squeeze(), self.k, largest=False)
+
+		z_score = values.mean()
+
+		# Build the feature gallery out of the k nearest neighbours.
+		# The authors migh have concatenated all features maps first, then check the minimum norm per pixel.
+		# Here, we check for the minimum norm first, then concatenate (sum) in the final layer.
+		scaled_s_map = torch.zeros(1,1,self.image_size,self.image_size)
+		for idx, fmap in enumerate(feature_maps):
+			nearest_fmaps = torch.index_select(self.feature_maps[idx], 0, indices)
+			# min() because kappa=1 in the paper
+			s_map, _ = torch.min(torch.linalg.norm(nearest_fmaps - fmap, dim=1), 0, keepdims=True)
+			scaled_s_map += torch.nn.functional.interpolate(
+				s_map.unsqueeze(0), size=(self.image_size,self.image_size), mode='bilinear'
+			)
+
+		scaled_s_map = self.blur(scaled_s_map)
+		
+		return z_score, scaled_s_map
+
 	def predict(self, sample):
 		feature_maps, z = self(sample)
 
@@ -201,6 +233,30 @@ class PaDiM(KNNExtractor):
 		self.E += self.epsilon * torch.eye(self.d_reduced).unsqueeze(-1).unsqueeze(-1)
 		self.E_inv = torch.linalg.inv(self.E.permute([2,3,0,1])).permute([2,3,0,1])
 
+		return self.resize, self.r_indices, self.means_reduced, self.E_inv, self.image_size
+
+	def inference(self, sample, resize, r_indices, means_reduced, E_inv, image_size):
+		self.resize = resize
+		self.r_indices = r_indices
+		self.means_reduced = means_reduced
+		self.E_inv = E_inv
+		self.image_size = image_size
+
+		feature_maps = self(sample)
+		resized_maps = [self.resize(fmap) for fmap in feature_maps]
+		fmap = torch.cat(resized_maps, 1)
+
+		# reduce
+		x_ = fmap[:,self.r_indices,...] - self.means_reduced
+
+		left = torch.einsum('abkl,bckl->ackl', x_, self.E_inv)
+		s_map = torch.sqrt(torch.einsum('abkl,abkl->akl', left, x_))
+		scaled_s_map = torch.nn.functional.interpolate(
+			s_map.unsqueeze(0), size=(self.image_size,self.image_size), mode='bilinear'
+		)
+
+		return torch.max(s_map), scaled_s_map[0, ...]
+
 	def predict(self, sample):
 		feature_maps = self(sample)
 		resized_maps = [self.resize(fmap) for fmap in feature_maps]
@@ -246,17 +302,17 @@ class PatchCore(KNNExtractor):
 		self.resize = None
 
 	def fit(self, train_dl):
-		for sample, _ in tqdm(train_dl, **get_tqdm_params()):
+		for sample, label_info in tqdm(train_dl, **get_tqdm_params()):
 			feature_maps = self(sample)
 
 			if self.resize is None:
 				largest_fmap_size = feature_maps[0].shape[-2:]
-				self.resize = torch.nn.AdaptiveAvgPool2d(largest_fmap_size)
+				self.resize = torch.nn.AdaptiveAvgPool2d(largest_fmap_size) # aggregation of feature vectors in neighbourhood 
 			resized_maps = [self.resize(self.average(fmap)) for fmap in feature_maps]
 			patch = torch.cat(resized_maps, 1)
 			patch = patch.reshape(patch.shape[1], -1).T
 
-			self.patch_lib.append(patch)
+			self.patch_lib.append(patch) 
 
 		self.patch_lib = torch.cat(self.patch_lib, 0)
 
@@ -267,6 +323,51 @@ class PatchCore(KNNExtractor):
 				eps=self.coreset_eps,
 			)
 			self.patch_lib = self.patch_lib[self.coreset_idx]
+		
+		return 	self.resize , self.average , self.patch_lib ,self.n_reweight, self.image_size, self.blur 
+		
+	def inference (self, sample, resize, average, patch_lib, n_reweight, image_size, blur):
+		self.resize = resize
+		self.average = average
+		self.patch_lib = patch_lib
+		self.n_reweight = n_reweight
+		self.image_size = image_size
+		self.blur = blur
+
+		feature_maps = self(sample)
+		resized_maps = [self.resize(self.average(fmap)) for fmap in feature_maps]
+		patch = torch.cat(resized_maps, 1)
+		patch = patch.reshape(patch.shape[1], -1).T
+
+		dist = torch.cdist(patch, self.patch_lib)
+		min_val, min_idx = torch.min(dist, dim=1)
+		s_idx = torch.argmax(min_val)
+		s_star = torch.max(min_val)
+
+		# reweighting
+		m_test = patch[s_idx].unsqueeze(0) # anomalous patch
+		m_star = self.patch_lib[min_idx[s_idx]].unsqueeze(0) # closest neighbour
+		w_dist = torch.cdist(m_star, self.patch_lib) # find knn to m_star pt.1
+		_, nn_idx = torch.topk(w_dist, k=self.n_reweight, largest=False) # pt.2
+		# equation 7 from the paper
+		m_star_knn = torch.linalg.norm(m_test-self.patch_lib[nn_idx[0,1:]], dim=1)
+		# Softmax normalization trick as in transformers.
+		# As the patch vectors grow larger, their norm might differ a lot.
+		# exp(norm) can give infinities.
+		D = torch.sqrt(torch.tensor(patch.shape[1]))
+		w = 1-(torch.exp(s_star/D)/(torch.sum(torch.exp(m_star_knn/D))))
+		s = w*s_star
+
+		# segmentation map
+		s_map = min_val.view(1,1,*feature_maps[0].shape[-2:])
+		s_map = torch.nn.functional.interpolate(
+			s_map, size=(self.image_size[0],self.image_size[1]), mode='bilinear'
+		)
+		s_map = self.blur(s_map)
+
+		return s, s_map
+
+
 
 	def predict(self, sample):		
 		feature_maps = self(sample)
