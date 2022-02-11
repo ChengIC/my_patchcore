@@ -59,7 +59,7 @@ def genTrainDS(img_folder,train_text='normal_train_samples.txt'):
         train_img_name = f.readlines()
         for img_name in train_img_name:
             img_path = os.path.join(img_folder, img_name.strip('\n'))
-            print (img_path)
+            
             train_im = Image.open(img_path).convert('RGB')
             train_im = loader(train_im)
             train_label = tensor([0])
@@ -90,7 +90,8 @@ def genConfigs(img_folder,fixed_seed=2022):
               0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0]
     for r in ratios:
         # train_filenames = img_filenames[0:int(len(img_filenames)*r)]
-        train_filenames = img_filenames[0:1000]
+        random.shuffle(img_filenames)
+        train_filenames = img_filenames[0:2]
         config_text_file = './config/ratio_' + str(int(r*100))+'.txt'
         with open(config_text_file,'w') as f:
             for ele in train_filenames:

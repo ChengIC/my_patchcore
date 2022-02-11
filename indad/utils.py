@@ -7,6 +7,7 @@ import torch
 from torch import tensor
 from torchvision import transforms
 
+import numpy as np
 from PIL import ImageFilter
 from sklearn import random_projection
 
@@ -57,10 +58,23 @@ def get_coreset_idx_randomp(
     """
 
     print(f"   Fitting random projections. Start dim = {z_lib.shape}.")
+
+
     try:
+        #### sklearn implementation
         transformer = random_projection.SparseRandomProjection(eps=eps)
-        z_lib = torch.tensor(transformer.fit_transform(z_lib))
+        z_lib = torch.tensor(np.array(transformer.fit_transform(z_lib)))
+        
+        #### jax implementation
+        # from jax_random_projections.sparse import SparseRandomProjectionJAX
+        # import jax.numpy as jnp
+        # z_lib_np = z_lib.numpy()
+        # z_lib_jax_array = jnp.array(z_lib_np)
+        # transformer = SparseRandomProjectionJAX(eps=eps)
+        # z_lib = torch.tensor(np.array(transformer.fit_transform(z_lib_jax_array)))
+
         print(f"   DONE.                 Transformed dim = {z_lib.shape}.")
+
     except ValueError:
         print( "   Error: could not project vectors. Please increase `eps`.")
 

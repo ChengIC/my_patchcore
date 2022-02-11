@@ -36,6 +36,7 @@ class KNNExtractor(torch.nn.Module):
 		self.out_indices = out_indices
 
 		self.device = "cuda" if torch.cuda.is_available() else "cpu"
+		print ('use ' + self.device + ' for training or inference')
 		self.feature_extractor = self.feature_extractor.to(self.device)
 			
 	def __call__(self, x: tensor):
