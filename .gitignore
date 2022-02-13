@@ -132,3 +132,4 @@ dmypy.json
 /config
 /model_zoo
 /results
+/config_shuffle

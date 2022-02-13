@@ -9,7 +9,9 @@ import time
 import os
 from skimage.measure import label, regionprops
 import xml.etree.ElementTree as ET
-import csv
+import cv2
+import numpy as np
+
 warnings.filterwarnings("ignore")
 
 IMAGENET_MEAN = tensor([.485, .456, .406])
@@ -35,6 +37,8 @@ def pred_to_img(x, range):
         x /= (range_max - range_min)
     return tensor_to_img(x)
 
+
+# For visualization
 def show_pred(sample, score, fmap, range):
     sample_img = tensor_to_img(sample, normalize=True)
     fmap_img = pred_to_img(fmap, range)
@@ -49,12 +53,11 @@ def show_pred(sample, score, fmap, range):
 
     return overlay_img
 
-
 def setOutPutFolder(config_setting):
     output_folder = './results/'
     now = int(time.time())
     timeArray = time.localtime(now)
-    StyleTime = time.strftime("%Y_%m_%d %H_%M_%S_", timeArray)
+    StyleTime = time.strftime("%Y_%m_%d_%H_%M_%S", timeArray)
     output_img_folder = output_folder + config_setting + '/' + StyleTime + '/' + 'imgs'
     output_csv_folder = output_folder + config_setting + '/' + StyleTime + '/' + 'csv'
     if not os.path.exists(output_img_folder):
@@ -62,7 +65,6 @@ def setOutPutFolder(config_setting):
     if not os.path.exists(output_csv_folder):
         os.makedirs (output_csv_folder)
     return output_img_folder,output_csv_folder
-
 
 def WriteOverlayImage(image_path,output_folder,image_name,test_img_tensor,img_lvl_anom_score,pxl_lvl_anom_score):
 
@@ -76,13 +78,19 @@ def WriteOverlayImage(image_path,output_folder,image_name,test_img_tensor,img_lv
     
     # Write image
     img = Image.open(image_path).convert('RGB')
-    img_size = img.resize((200, 200))
-    img1_size = overlay_img.resize((200, 200))
-    img2 = Image.new("RGB", (400, 200), "white")
-    img2.paste(img_size, (0, 0))
-    img2.paste(img1_size, (200, 0))
+    width1, height1 = img.size
+    width2, height2 = overlay_img.size
+    if width1!=width2 or height1!=height2:
+        overlay_img = overlay_img.resize((width1, height1))
+
+    img2 = Image.new("RGB", (width1+width1, height1), "white")
+
+    img2.paste(img, (0, 0))
+    img2.paste(overlay_img, (width1, 0))
     img2.save(output_img_path)
 
+
+# For accuracy testing
 def AnomalyToBBox(pxl_lvl_anom_score, anomo_threshold=0.75, x_ratio=1, y_ratio=1):
     score_range = pxl_lvl_anom_score.min(), pxl_lvl_anom_score.max()
     fmap_img = pred_to_img(pxl_lvl_anom_score, score_range)    
@@ -97,7 +105,6 @@ def AnomalyToBBox(pxl_lvl_anom_score, anomo_threshold=0.75, x_ratio=1, y_ratio=1
 
     return detected_box_list
 
-
 def bb_intersection_over_union(boxA, boxB):
     boxA = [int(x) for x in boxA]
     boxB = [int(x) for x in boxB]
@@ -110,7 +117,6 @@ def bb_intersection_over_union(boxA, boxB):
     boxBArea = (boxB[2] - boxB[0] + 1) * (boxB[3] - boxB[1] + 1)
     iou = interArea / float(boxAArea + boxBArea - interArea)
     return iou
-
 
 def readXML(annotation_folder, image_name):
     box_dict = {}
@@ -132,3 +138,25 @@ def readXML(annotation_folder, image_name):
         # box_dict[cls] = [b1/335,b2/335,b3/880,b4/880]
         box_dict[cls] = [b1,b2,b3,b4]
     return box_dict
+
+
+
+def WriteDetectImage(image_path, annotation_folder,detected_box_list,image_name,output_folder):
+        img_1 = cv2.imread(image_path)
+        img_2= cv2.imread(image_path)
+        for detected_box in detected_box_list:
+            cv2.rectangle(img_1, (detected_box[0], detected_box[1]), 
+                                    (detected_box[2], detected_box[3]), (255,0,0), 2)
+        
+        box_dict = readXML(annotation_folder, image_name)
+        for cls in box_dict:
+            bbox = [int(bb) for bb in box_dict[cls]]
+            cv2.rectangle(img_2, (bbox[0], bbox[2]), (bbox[1], bbox[3]),  (0, 0, 255), 2)
+
+        numpy_horizontal = np.hstack((img_2, img_1))
+
+        # Output image path setting
+        out_img_filename = image_name.replace('.jpg','_withBBox.png')
+        output_img_path = os.path.join(output_folder, out_img_filename)
+        cv2.imwrite(output_img_path, numpy_horizontal)
+

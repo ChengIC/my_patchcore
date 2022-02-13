@@ -80,21 +80,21 @@ def genTrainDS(img_folder,train_text='normal_train_samples.txt'):
     return train_ds
 
 def genConfigs(img_folder,fixed_seed=2022):
-    config_folder = './config'
+    config_folder = './config_shuffle'
     if not os.path.exists(config_folder):
         os.makedirs (config_folder)
     img_filenames = os.listdir(img_folder)
     random.seed(fixed_seed)
-    random.shuffle(img_filenames)
-    ratios =[0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
-    for r in ratios:
-        train_filenames = img_filenames[0:int(len(img_filenames)*r)]
-        config_text_file = './config/ratio_' + str(int(r*100))+'.txt'
+    set_nums = 21
+    for r in range(set_nums):
+        random.shuffle(img_filenames)
+        train_filenames = img_filenames[0:10]
+        config_text_file = os.path.join(config_folder, 'set_' + str(r) + '.txt' )
         with open(config_text_file,'w') as f:
             for ele in train_filenames:
                 f.write(ele + "\n")
-    
-    return os.listdir(config_folder)
+    config_list = os.listdir(config_folder)
+    return config_folder, config_list
 
 
 def savePath(method_name,config_filename):
@@ -112,11 +112,11 @@ def run_model(method: str):
     
     img_folder = './datasets/full_body/train/good/'
     
-    config_list = genConfigs(img_folder)
+    config_folder, config_list = genConfigs(img_folder)
     
     for config_filename in config_list:
         print("   Training with setting of " + config_filename)
-        config_filepath = os.path.join('./config',config_filename)
+        config_filepath = os.path.join(config_folder,config_filename)
         # print (config_filepath)
         train_ds = genTrainDS(img_folder,config_filepath)
 

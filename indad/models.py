@@ -280,7 +280,6 @@ class PaDiM(KNNExtractor):
 			"epsilon": self.epsilon,
 		})
 
-
 class PatchCore(KNNExtractor):
 	def __init__(
 		self,

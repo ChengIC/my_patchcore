@@ -65,7 +65,7 @@ def get_coreset_idx_randomp(
         transformer = random_projection.SparseRandomProjection(eps=eps)
         z_lib = torch.tensor(np.array(transformer.fit_transform(z_lib)))
         
-        #### jax implementation
+        # ### jax implementation
         # from jax_random_projections.sparse import SparseRandomProjectionJAX
         # import jax.numpy as jnp
         # z_lib_np = z_lib.numpy()
