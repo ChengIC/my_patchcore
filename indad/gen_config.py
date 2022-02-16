@@ -13,6 +13,15 @@ def unique_id(size):
 
 random.seed(20220214)
 
+def fixTestID(objs_imgs_folder,div_num=11):
+    image_ids = os.listdir(objs_imgs_folder)
+    random.shuffle(image_ids)
+    part_len = len(image_ids)/11
+    fix_test_imgs_ids = image_ids[0:int(part_len)]
+    usable_img_ids = image_ids[int(part_len):]
+    return fix_test_imgs_ids,usable_img_ids
+
+
 class GenConfig():
     # set the config folders
     def __init__(self,config_dir,normal_imgs_folder,objs_imgs_folder):
@@ -27,20 +36,17 @@ class GenConfig():
             os.makedirs (self.supervised_config_folder)
         if not os.path.exists(self.semi_supervised_config_folder):
             os.makedirs (self.semi_supervised_config_folder)
+        
+        self.test_imgs_ids,self.train_img_ids = fixTestID(objs_imgs_folder,div_num=11)
 
     def genSupervisedConfig(self, batch_size = 16, epochs = 600, imgsz = 640):
-
         image_ids = os.listdir(self.objs_imgs_folder)
-        random.shuffle(image_ids)
-        part_len = len(image_ids)/11
-        self.test_imgs_ids = image_ids[0:int(part_len)]
-
         ratios = [2,3,4,5,6,7,8,9,10]
         for r in ratios:
             val_img_ids = []
-            train_img_ids = image_ids[int(part_len):int((r+1)*part_len)]
+            selected_train_img_ids = self.train_img_ids [0:int(r/10*len(self.train_img_ids))]
             for i in image_ids:
-                if i not in train_img_ids and i not in self.test_imgs_ids:
+                if i not in selected_train_img_ids and i not in self.test_imgs_ids:
                     val_img_ids.append(i)
 
             data_dict = {
@@ -49,7 +55,7 @@ class GenConfig():
                         'imgsz':imgsz,
                         'ratio':r,
                         'test_ids':self.test_imgs_ids ,
-                        'train_ids':train_img_ids,
+                        'train_ids':selected_train_img_ids,
                         'val_ids':val_img_ids
             }
             json_string = json.dumps(data_dict)
@@ -75,16 +81,11 @@ class GenConfig():
                     0.5, 0.6, 0.7, 0.8, 0.9, 1]
         for r in ratios:
             train_img_ids = image_ids[0:int(r*len(image_ids)*percentage/100)]
-            val_img_ids = []
-            for i in image_ids:
-                if i not in train_img_ids and i not in self.test_imgs_ids:
-                    val_img_ids.append(i)
             data_dict = {
                         'imgsz':imgsz,
                         'percentage':int(r*percentage),
                         'test_ids':self.test_imgs_ids,
                         'train_ids':train_img_ids,
-                        'val_ids':val_img_ids
             }
             json_file_id = unique_id(8)
             json_filePath = os.path.join(self.semi_supervised_config_folder,'percentage_'+str((r*percentage))+ '_' + json_file_id + '.json')
@@ -96,14 +97,14 @@ class GenConfig():
         return config_path_list
 
 
-if __name__ == "__main__":
-    config_dir = './config'
-    normal_imgs_folder = './datasets/THz_Body/train/good'
-    objs_imgs_folder = './datasets/full_body/test/objs'
-    Config0 = GenConfig (config_dir,normal_imgs_folder,objs_imgs_folder)
-    Config0.genSupervisedConfig()
-    config_path_list = Config0.genSemiConfig(percentage=2)
-    print (config_path_list)
+# if __name__ == "__main__":
+#     config_dir = './config'
+#     normal_imgs_folder = './datasets/THz_Body/train/good'
+#     objs_imgs_folder = './datasets/full_body/test/objs'
+#     Config0 = GenConfig (config_dir,normal_imgs_folder,objs_imgs_folder)
+#     Config0.genSupervisedConfig()
+#     config_path_list = Config0.genSemiConfig(percentage=2)
+#     print (config_path_list)
 
 
 
