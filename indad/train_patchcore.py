@@ -21,7 +21,7 @@ class train_patchcore():
     def run(self): 
         train_loading = LoadTrainConfig(self.configPath)
         train_ds = train_loading.genTrainDS(self.train_imgs_folder)
-        train_tar, train_path = saveModelPath(configPath,self.TimeStamp)
+        train_tar, train_path = saveModelPath(self.configPath,self.TimeStamp)
        
         tobesaved = self.model.fit(train_ds)
         
@@ -30,9 +30,9 @@ class train_patchcore():
 
         return train_tar, train_path
 
-if __name__ == "__main__":
-    configPath = './config/semi/percentage_0.2_XYWQMHA8.json'
-    train_imgs_folder = './datasets/THz_Body/train/good'
-    my_training = train_patchcore(configPath,train_imgs_folder)
-    train_tar, train_path = my_training.run()
-    print (train_tar, train_path)
+# if __name__ == "__main__":
+#     configPath = './config/semi/percentage_0.2_XYWQMHA8.json'
+#     train_imgs_folder = './datasets/THz_Body/train/good'
+#     my_training = train_patchcore(configPath,train_imgs_folder)
+#     train_tar, train_path = my_training.run()
+#     print (train_tar, train_path)

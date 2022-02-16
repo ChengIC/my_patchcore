@@ -81,8 +81,8 @@ class RunPatchcore():
         return self.output_img_folder, self.output_json_folder
 
 if __name__ == "__main__":
-    configPath = './config/semi/percentage_0.2_XYWQMHA8.json'
-    model_dir = './model_zoo/2022_02_15_11_52_50/percentage_0.2_XYWQMHA8/'
+    configPath = './config/semi/percentage_0.2_ZRBX5NKS.json'
+    model_dir = 'model_zoo/percentage_0.2_ZRBX5NKS/2022_02_16_15_46_29/'
     run1 = RunPatchcore(model_dir,configPath=configPath)
     test_imgs_folder = './datasets/full_body/test/objs'
     run1.run(test_imgs_folder,writeImage=True)

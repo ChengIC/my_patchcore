@@ -12,7 +12,7 @@ def saveModelPath(configPath,TimeStamp=None):
     if TimeStamp is None:
         TimeStamp = genTimeStamp()
     config_filename = configPath.split('/')[-1].strip('.json')
-    model_path = './model_zoo/' + '/' + TimeStamp + '/' + config_filename
+    model_path = './model_zoo/' + '/' + config_filename + '/' + TimeStamp
     if not os.path.exists(model_path):
         os.makedirs (model_path)
     train_tar = os.path.join(model_path, 'patchcore_path.tar')
