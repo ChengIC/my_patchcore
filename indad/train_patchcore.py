@@ -81,6 +81,7 @@ class train_patchcore():
 
     def saveTrainConfig(self):
 
+        self.data['configPath'] = self.configPath
         self.data['imgsz'] = self.resize
         self.data['center_crop'] = self.center_crop
         self.data['scaling_factor'] = self.scaling_factor

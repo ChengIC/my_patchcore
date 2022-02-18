@@ -15,22 +15,24 @@ if __name__ == "__main__":
                       normal_imgs_folder=normal_imgs_folder,
                       objs_imgs_folder=objs_imgs_folder
                     )   
-    config_path_list = config0.genSemiConfig(percentage=1)
+    config_path_list = config0.genSemiConfig(percentage=30)
     
     TimeStamp = genTimeStamp()
 
 
     for configPath in config_path_list:
-
-        my_training = train_patchcore(configPath=configPath,
-                                    train_imgs_folder=normal_imgs_folder,
-                                    resize=None,
-                                    center_crop=None,
-                                    scaling_factor=0.5,
-                                    f_coreset=.20,
-                                    backbone_name="wide_resnet50_2",
-                                    TimeStamp=TimeStamp,
-                                    )
-        my_training.run()
+        try:
+            my_training = train_patchcore(configPath=configPath,
+                                        train_imgs_folder=normal_imgs_folder,
+                                        resize=None,
+                                        center_crop=None,
+                                        scaling_factor=None,
+                                        f_coreset=.20,
+                                        backbone_name="wide_resnet50_2",
+                                        TimeStamp=TimeStamp,
+                                        )
+            my_training.run()
+        except:
+            continue
         
 
