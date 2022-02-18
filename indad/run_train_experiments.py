@@ -11,9 +11,9 @@ if __name__ == "__main__":
     normal_imgs_folder='./datasets/THz_Body/train/good'
     objs_imgs_folder='./datasets/full_body/test/objs'
 
-    config0=GenConfig(config_dir,
-                      normal_imgs_folder,
-                      objs_imgs_folder
+    config0=GenConfig(config_dir=config_dir,
+                      normal_imgs_folder=normal_imgs_folder,
+                      objs_imgs_folder=objs_imgs_folder
                     )   
     config_path_list = config0.genSemiConfig(percentage=1)
     
@@ -26,9 +26,10 @@ if __name__ == "__main__":
                                     train_imgs_folder=normal_imgs_folder,
                                     resize=None,
                                     center_crop=None,
+                                    scaling_factor=0.5,
                                     f_coreset=.20,
                                     backbone_name="wide_resnet50_2",
-                                    TimeStamp=TimeStamp
+                                    TimeStamp=TimeStamp,
                                     )
         my_training.run()
         

@@ -82,7 +82,7 @@ class GenConfig():
         for r in ratios:
             train_img_ids = image_ids[0:int(r*len(image_ids)*percentage/100)]
             data_dict = {
-                        'imgsz':imgsz,
+                        'original_imgsz':imgsz,
                         'percentage':float(r*percentage),
                         'test_ids':self.test_imgs_ids,
                         'train_ids':train_img_ids,

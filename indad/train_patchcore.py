@@ -16,17 +16,19 @@ warnings.filterwarnings("ignore")
 
 class train_patchcore():
     def __init__(self,configPath,train_imgs_folder,
-                resize=None,center_crop=None,
+                resize=None,center_crop=None,scaling_factor=None,
                 f_coreset=.20,backbone_name="wide_resnet50_2",TimeStamp=None):
         
         self.configPath=configPath
         self.train_imgs_folder=train_imgs_folder
         self.resize=resize
         self.center_crop=center_crop
+        self.scaling_factor=scaling_factor
         self.f_coreset=f_coreset
         self.backbone_name=backbone_name
         self.TimeStamp=TimeStamp
-
+        with open(configPath) as json_file:
+            self.data = json.load(json_file)
 
         self.model=PatchCore(
                     f_coreset=f_coreset, 
@@ -42,13 +44,16 @@ class train_patchcore():
                         transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD),
                     ]
         if resize!=None:
-            transfoms_paras.append(transforms.Resize(resize, interpolation=transforms.InterpolationMode.BICUBIC))
+            transfoms_paras.append(transforms.Resize(self.resize, interpolation=transforms.InterpolationMode.BICUBIC))
         if center_crop!=None:
             transfoms_paras.append(transforms.CenterCrop(center_crop))
-        self.loader=transforms.Compose(transfoms_paras)
+        if scaling_factor!=None:
+            width = int(self.data['original_imgsz'][0]*scaling_factor)
+            height = int(self.data['original_imgsz'][1]*scaling_factor)
+            self.resize=[width,height]
+            transfoms_paras.append(transforms.Resize(self.resize, interpolation=transforms.InterpolationMode.BICUBIC))
 
-        with open(configPath) as json_file:
-            self.data = json.load(json_file)
+        self.loader=transforms.Compose(transfoms_paras)
 
     def genTrainDS(self):
         train_ims = []
@@ -78,6 +83,7 @@ class train_patchcore():
 
         self.data['imgsz'] = self.resize
         self.data['center_crop'] = self.center_crop
+        self.data['scaling_factor'] = self.scaling_factor
         self.data['train_imgs_folder'] = self.train_imgs_folder
         self.data['backbone_name'] = self.backbone_name
         self.data['TimeStamp'] = self.TimeStamp
