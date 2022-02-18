@@ -16,7 +16,7 @@ random.seed(20220214)
 def fixTestID(objs_imgs_folder,div_num=11):
     image_ids = os.listdir(objs_imgs_folder)
     random.shuffle(image_ids)
-    part_len = len(image_ids)/11
+    part_len = len(image_ids)/div_num
     fix_test_imgs_ids = image_ids[0:int(part_len)]
     usable_img_ids = image_ids[int(part_len):]
     return fix_test_imgs_ids,usable_img_ids
@@ -83,7 +83,7 @@ class GenConfig():
             train_img_ids = image_ids[0:int(r*len(image_ids)*percentage/100)]
             data_dict = {
                         'imgsz':imgsz,
-                        'percentage':int(r*percentage),
+                        'percentage':float(r*percentage),
                         'test_ids':self.test_imgs_ids,
                         'train_ids':train_img_ids,
             }

@@ -134,3 +134,4 @@ dmypy.json
 /results
 /config_shuffle
 /processed_result
+/model_test

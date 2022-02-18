@@ -8,7 +8,7 @@ from draw_utils import WriteOverlayImage,AnomalyToBBox,WriteDetectImage
 from draw_utils import readXML
 import csv
 
-class agvPatchCore():
+class visPatchCore():
 
     def __init__(self, all_json_dirs,test_imgs_folder,annotation_folder,
                 write_image=True,write_result=True):
@@ -44,7 +44,7 @@ class agvPatchCore():
             writer = csv.writer(f2)
             writer.writerow(det_csv_header)
 
-    def agv_result(self):
+    def vis_result(self):
         
         model_num = len(self.all_json_dirs)
         
@@ -60,7 +60,6 @@ class agvPatchCore():
             
             for dir in self.all_json_dirs: 
                 json_path = os.path.join(dir,json_id)
-               
                 with open(json_path) as json_file:
                     json_data = json.load(json_file)
                     pxl_lvl_anom_score = np.array(json_data['pxl_lvl_anom_score'])
@@ -94,11 +93,11 @@ class agvPatchCore():
                 WriteOverlayImage(image_path,None,accumulated_img_scores,
                                     accumulated_pixel_scores,overlay_img_path)
                 
-                WriteDetectImage(image_path,annotation_folder,detected_box_list,
+                WriteDetectImage(image_path,self.annotation_folder,detected_box_list,
                                 image_name,detected_img_path)
 
             if self.write_result:
-                box_dict = readXML(annotation_folder, image_name)
+                box_dict = readXML(self.annotation_folder, image_name)
                 with open(self.gt_csv_file,'a') as f1:
                     writer = csv.writer(f1)
                     for cls in box_dict:
@@ -109,7 +108,7 @@ class agvPatchCore():
                 with open(self.det_csv_file,'a') as f2:
                     writer = csv.writer(f2)
                     for bbox in detected_box_list:
-                        csv_data = [image_name, 'Anomaly' ,0.75, bbox[0], bbox[1], bbox[2], bbox[3]]
+                        csv_data = [image_name, 'Anomaly' ,0.75, bbox[0], bbox[2], bbox[1], bbox[3]]
                         writer.writerow(csv_data)
 
 
@@ -118,5 +117,5 @@ if __name__ == "__main__":
     dirs = ['./results/percentage_0.2_XYWQMHA8/2022_02_16_13_57_57/data']
     test_imgs_folder = './datasets/full_body/test/objs'
     annotation_folder = './datasets/full_body/Annotations'
-    av1 = agvPatchCore (dirs,test_imgs_folder,annotation_folder)
-    av1.agv_result()
+    av1 = visPatchCore (dirs,test_imgs_folder,annotation_folder)
+    av1.vis_result()
