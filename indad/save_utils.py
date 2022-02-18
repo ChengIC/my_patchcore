@@ -19,14 +19,13 @@ def saveModelPath(configPath,TimeStamp=None):
     train_path = os.path.join(model_path, 'patchcore_path')
     return train_tar, train_path, model_path
 
-def saveResultPath(configPath,TimeStamp=None,output_folder = './results/'):
-    config_filename = configPath.split('/')[-1].strip('.json')
+def saveResultPath(config_name,TimeStamp=None,output_folder = './results/'):
     
     if TimeStamp is None:
         TimeStamp = genTimeStamp()
         
-    output_img_folder = os.path.join(output_folder, TimeStamp + '/' + config_filename + '/' + 'imgs')
-    output_data_folder = os.path.join(output_folder, TimeStamp + '/' + config_filename + '/' + 'data')
+    output_img_folder = os.path.join(output_folder, TimeStamp + '/' + config_name + '/' + 'imgs')
+    output_data_folder = os.path.join(output_folder, TimeStamp + '/' + config_name + '/' + 'data')
     if not os.path.exists(output_img_folder):
         os.makedirs (output_img_folder)
     if not os.path.exists(output_data_folder):

@@ -50,7 +50,7 @@ class train_patchcore():
         if scaling_factor!=None:
             width = int(self.data['original_imgsz'][0]*scaling_factor)
             height = int(self.data['original_imgsz'][1]*scaling_factor)
-            self.resize=[width,height]
+            self.resize=[height,width]
             transfoms_paras.append(transforms.Resize(self.resize, interpolation=transforms.InterpolationMode.BICUBIC))
 
         self.loader=transforms.Compose(transfoms_paras)

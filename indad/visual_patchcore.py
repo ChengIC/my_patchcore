@@ -2,7 +2,7 @@
 import os
 import json
 import numpy as np
-from save_utils import folderSet
+from save_utils import saveResultPath
 import torch
 from draw_utils import WriteOverlayImage,AnomalyToBBox,WriteDetectImage
 from draw_utils import readXML
@@ -11,7 +11,8 @@ import csv
 class visPatchCore():
 
     def __init__(self, all_json_dirs,test_imgs_folder,annotation_folder,
-                write_image=True,write_result=True):
+                write_image=True,write_result=True,
+                TimeStamp=None):
 
         self.all_json_dirs=all_json_dirs
         
@@ -20,7 +21,12 @@ class visPatchCore():
 
         self.write_image=write_image
         self.write_result=write_result
-        self.output_img_folder,self.output_data_folder = folderSet()
+
+        if len(self.all_json_dirs)==1:
+            config_name = self.all_json_dirs[0].split('/')[-2]
+            self.output_img_folder,self.output_data_folder = saveResultPath(config_name,TimeStamp=TimeStamp,output_folder = './processed_results/')
+        else:
+            self.output_img_folder,self.output_data_folder = saveResultPath(config_name='exp',TimeStamp=TimeStamp,output_folder = './processed_results/')
 
         self.process_info_file = os.path.join(self.output_data_folder,'info.json')
         data_dict = {
