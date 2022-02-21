@@ -338,8 +338,11 @@ class PatchCore(KNNExtractor):
 		resized_maps = [self.resize(self.average(fmap)) for fmap in feature_maps]
 		patch = torch.cat(resized_maps, 1)
 		patch = patch.reshape(patch.shape[1], -1).T
-
-		dist = torch.cdist(patch, self.patch_lib)
+		if torch.cuda.is_available():
+			dist = torch.cdist(patch.cuda(), self.patch_lib.cuda())
+			dist = dist.cpu()
+		else: 
+			dist = torch.cdist(patch, self.patch_lib)
 		min_val, min_idx = torch.min(dist, dim=1)
 		s_idx = torch.argmax(min_val)
 		s_star = torch.max(min_val)

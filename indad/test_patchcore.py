@@ -5,7 +5,7 @@ from models import PatchCore
 from PIL import Image
 from torch import tensor
 from torchvision import transforms
-from save_utils import saveResultPath,genTimeStamp
+from save_utils import saveResultPath
 import json
 import warnings # for some torch warnings regarding depreciation
 from draw_utils import WriteOverlayImage
@@ -31,18 +31,28 @@ class RunPatchcore():
             with open(configPath) as json_file:
                 data = json.load(json_file)
                 # img_resize = data['imgsz'][::-1]
-                img_resize = data['imgsz']
-                transfoms_paras.append(transforms.Resize(img_resize, 
-                                                    interpolation=transforms.InterpolationMode.BICUBIC))
+                try:
+                    img_resize = data['imgsz']
+                    transfoms_paras.append(transforms.Resize(img_resize, 
+                                                            interpolation=transforms.InterpolationMode.BICUBIC))
+                except:
+                    img_resize = data['original_imgsz'][::-1]
+                    transfoms_paras.append(transforms.Resize(img_resize, 
+                                                            interpolation=transforms.InterpolationMode.BICUBIC))
         
         self.loader=transforms.Compose(transfoms_paras)
 
         self.model = PatchCore(backbone_name="wide_resnet50_2",)
         state_dict_path = os.path.join(model_dir,'patchcore_path')
         tar_path = os.path.join(model_dir,'patchcore_path.tar')
-        self.model.load_state_dict(torch.load(state_dict_path))
-        self.var1, self.var2, self.var3, self.var4, self.var5, self.var6 = torch.load(tar_path)
-        
+
+        if torch.cuda.is_available():
+            self.model.load_state_dict(torch.load(state_dict_path))
+            self.var1, self.var2, self.var3, self.var4, self.var5, self.var6 = torch.load(tar_path)
+        else:
+            self.model.load_state_dict(torch.load(state_dict_path,map_location ='cpu'))
+            self.var1, self.var2, self.var3, self.var4, self.var5, self.var6 = torch.load(tar_path,map_location ='cpu')
+            
         self.result = {}
         self.config_name = model_dir.split('/')[-1]
         self.output_img_folder, self.output_json_folder = saveResultPath(self.config_name,TimeStamp=TimeStamp)
