@@ -131,6 +131,6 @@ dmypy.json
 /model_zoo
 /results
 /config_shuffle
-/processed_result
+/processed_results
 /model_test
 /results_example

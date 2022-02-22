@@ -4,7 +4,7 @@ import json
 import numpy as np
 from save_utils import saveResultPath
 import torch
-from draw_utils import WriteOverlayImage,AnomalyToBBox,WriteDetectImage
+from draw_utils import WriteOverlayImage,AnomalyToBBox,WriteDetectImage,combineImages
 from draw_utils import readXML
 import csv
 
@@ -86,8 +86,8 @@ class visPatchCore():
             accumulated_img_scores = torch.as_tensor(accumulated_img_scores/model_num)
             detected_box_list = AnomalyToBBox(accumulated_pixel_scores, anomo_threshold=0.75, x_ratio=1, y_ratio=1)
 
+            image_name =json_id.replace('.json','.jpg')
             if self.write_image:
-                image_name =json_id.replace('.json','.jpg')
                 image_path = os.path.join(self.test_imgs_folder,image_name)
 
                 overlay_image_name = json_id.replace('.json','_overlay.jpg')
@@ -95,12 +95,17 @@ class visPatchCore():
                 
                 detected_image_name = json_id.replace('.json','_detected.jpg')
                 detected_img_path = os.path.join(self.output_img_folder,detected_image_name)
-                
-                WriteOverlayImage(image_path,None,accumulated_img_scores,
-                                    accumulated_pixel_scores,overlay_img_path)
+
+                output_image_name = json_id.replace('.json','_together.jpg')
+                output_img_path = os.path.join(self.output_img_folder,output_image_name)
+
+                # WriteOverlayImage(image_path,None,accumulated_img_scores,
+                #                     accumulated_pixel_scores,overlay_img_path)
                 
                 WriteDetectImage(image_path,self.annotation_folder,detected_box_list,
                                 image_name,detected_img_path)
+
+                # combineImages(overlay_img_path,detected_img_path,output_img_path)
 
             if self.write_result:
                 box_dict = readXML(self.annotation_folder, image_name)

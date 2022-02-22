@@ -128,3 +128,14 @@ def WriteDetectImage(image_path,annotation_folder,detected_box_list,
     numpy_horizontal = np.hstack((img_2, img_1))
 
     cv2.imwrite(output_img_path, numpy_horizontal)
+
+def combineImages(overlay_img_path,detected_img_path,output_img_path):
+    img1 = cv2.imread(overlay_img_path)
+    img2 = cv2.imread(detected_img_path)
+    im_v = cv2.vconcat([img1, img2])
+    cv2.imwrite(output_img_path, im_v)
+
+    os.remove(overlay_img_path)
+    os.remove(detected_img_path)
+
+

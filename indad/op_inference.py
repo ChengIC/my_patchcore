@@ -1,9 +1,5 @@
-from gen_config import GenConfig
-from train_patchcore import train_patchcore
-from save_utils import genTimeStamp
 import os
 from test_patchcore import RunPatchcore
-from visual_patchcore import visPatchCore
 
 
 if __name__ == "__main__":
