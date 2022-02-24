@@ -7,7 +7,7 @@ from torch import tensor
 from torchvision import transforms
 import json
 import numpy
-from PIL import Image
+from PIL import Image, ImageFilter
 import os
 from torch.utils.data import DataLoader,TensorDataset
 
@@ -16,14 +16,14 @@ warnings.filterwarnings("ignore")
 
 class train_patchcore():
     def __init__(self,configPath,train_imgs_folder,
-                resize=None,center_crop=None,scaling_factor=None,
-                f_coreset=.20,backbone_name="wide_resnet50_2",TimeStamp=None):
+                resize=None,center_crop=None,
+                f_coreset=.20,backbone_name="wide_resnet50_2",
+                TimeStamp=None):
         
         self.configPath=configPath
         self.train_imgs_folder=train_imgs_folder
         self.resize=resize
         self.center_crop=center_crop
-        self.scaling_factor=scaling_factor
         self.f_coreset=f_coreset
         self.backbone_name=backbone_name
         self.TimeStamp=TimeStamp
@@ -47,14 +47,18 @@ class train_patchcore():
             transfoms_paras.append(transforms.Resize(self.resize, interpolation=transforms.InterpolationMode.BICUBIC))
         if center_crop!=None:
             transfoms_paras.append(transforms.CenterCrop(center_crop))
-        if scaling_factor!=None:
-            width = int(self.data['original_imgsz'][0]*scaling_factor)
-            height = int(self.data['original_imgsz'][1]*scaling_factor)
-            self.resize=[height,width]
-            transfoms_paras.append(transforms.Resize(self.resize, interpolation=transforms.InterpolationMode.BICUBIC))
+        
+        if self.data!=None:
+            self.scaling_factor=self.data['scaling_factor']
+            self.median_blur_size=self.data['smooth']
+            if self.scaling_factor!=1:
+                width = int(self.data['original_imgsz'][0]*self.scaling_factor)
+                height = int(self.data['original_imgsz'][1]*self.scaling_factor)
+                self.resize=[height,width]
+                transfoms_paras.append(transforms.Resize(self.resize, interpolation=transforms.InterpolationMode.BICUBIC))
 
         self.loader=transforms.Compose(transfoms_paras)
-
+        
     def genTrainDS(self):
         train_ims = []
         train_labels = []
@@ -62,6 +66,9 @@ class train_patchcore():
         for img_id in self.data['train_ids']:
             img_path = os.path.join(self.train_imgs_folder, img_id)
             train_im = Image.open(img_path).convert('RGB')
+            
+            if self.median_blur_size!=0:
+                train_im = train_im.filter(ImageFilter.MedianFilter(size=self.median_blur_size))
 
             train_im = self.loader(train_im)
             train_label = tensor([0])

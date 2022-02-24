@@ -1,11 +1,12 @@
 import os
 from test_patchcore import RunPatchcore
-
+from save_utils import genTimeStamp
 
 if __name__ == "__main__":
-
+    ts = genTimeStamp()
     test_imgs_folder = './datasets/full_body/test/objs'
-    for roots, dirs, files in os.walk('./model_test/'):
+    model_zoo_folder = './model_zoo/2022_02_24_14_38_03'
+    for roots, dirs, files in os.walk(model_zoo_folder):
         if 'training_config.json' in files:
             
             config_path = os.path.join(roots,'training_config.json')
@@ -13,7 +14,8 @@ if __name__ == "__main__":
                                 resize=None,
                                 center_crop=None,
                                 configPath=config_path,
-                                TimeStamp=None)
+                                TimeStamp=model_zoo_folder.split('/')[-1]
+                                )
 
             run0.run(imgs_folder=test_imgs_folder,
                     writeImage=True)
