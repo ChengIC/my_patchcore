@@ -61,17 +61,22 @@ def get_coreset_idx_randomp(
 
 
     try:
-        #### sklearn implementation
-        transformer = random_projection.SparseRandomProjection(eps=eps)
-        z_lib = torch.tensor(np.array(transformer.fit_transform(z_lib)))
-        
-        # ### jax implementation
-        # from jax_random_projections.sparse import SparseRandomProjectionJAX
-        # import jax.numpy as jnp
-        # z_lib_np = z_lib.numpy()
-        # z_lib_jax_array = jnp.array(z_lib_np)
-        # transformer = SparseRandomProjectionJAX(eps=eps)
-        # z_lib = torch.tensor(np.array(transformer.fit_transform(z_lib_jax_array)))
+        print ('Try Jax or Sklearn projection')
+        try:
+            # ### jax implementation
+            from jax_random_projections.sparse import SparseRandomProjectionJAX
+            import jax.numpy as jnp
+            z_lib_np = z_lib.numpy()
+            z_lib_jax_array = jnp.array(z_lib_np)
+            transformer = SparseRandomProjectionJAX(eps=eps)
+            z_lib = torch.tensor(np.array(transformer.fit_transform(z_lib_jax_array)))
+            print ('Use Jax projection')
+
+        except:
+            #### sklearn implementation
+            transformer = random_projection.SparseRandomProjection(eps=eps)
+            z_lib = torch.tensor(np.array(transformer.fit_transform(z_lib)))
+            print ('Use Sklearn projection')
 
         print(f"   DONE.                 Transformed dim = {z_lib.shape}.")
 

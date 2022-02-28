@@ -2,7 +2,7 @@
 import torch
 import os
 from models import PatchCore
-from PIL import Image
+from PIL import Image,ImageFilter
 from torch import tensor
 from torchvision import transforms
 from save_utils import saveResultPath
@@ -15,6 +15,7 @@ class RunPatchcore():
     def __init__(self,model_dir,resize=None,center_crop=None,
                                 configPath=None,TimeStamp=None):
         self.reszie = None
+        self.median_blur_size=0
         IMAGENET_MEAN = tensor([.485, .456, .406])
         IMAGENET_STD = tensor([.229, .224, .225])
         transfoms_paras = [
@@ -30,7 +31,7 @@ class RunPatchcore():
         if configPath!=None:
             with open(configPath) as json_file:
                 data = json.load(json_file)
-                # img_resize = data['imgsz'][::-1]
+                self.median_blur_size=data['smooth']
                 try:
                     img_resize = data['imgsz']
                     transfoms_paras.append(transforms.Resize(img_resize, 
@@ -64,9 +65,15 @@ class RunPatchcore():
                 self.result['image_name'] = image_name
                 image_path = os.path.join(imgs_folder,image_name)
                 image = Image.open(image_path).convert('RGB')
+
+                if self.median_blur_size!=0:
+                    image = image.filter(ImageFilter.MedianFilter(size=self.median_blur_size))
+                    print ('Applying median filter on inference image with degree of '+ str(self.median_blur_size))
+
                 original_size_width, original_size_height = image.size
                 image = self.loader(image).unsqueeze(0)
                 test_img_tensor = image.to('cpu', torch.float)
+                
 
                 # PatchCore Inference
                 HeatMap_Size = [original_size_height, original_size_width]

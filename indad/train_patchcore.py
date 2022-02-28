@@ -69,6 +69,7 @@ class train_patchcore():
             
             if self.median_blur_size!=0:
                 train_im = train_im.filter(ImageFilter.MedianFilter(size=self.median_blur_size))
+                print ('Applying median filter on training image with degree of '+ str(self.median_blur_size))
 
             train_im = self.loader(train_im)
             train_label = tensor([0])
