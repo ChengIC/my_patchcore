@@ -63,6 +63,7 @@ class RunPatchcore():
         for image_name in os.listdir(imgs_folder):
             if '.jpg' in image_name:
                 self.result['image_name'] = image_name
+                print ('Process image: ' + image_name)
                 image_path = os.path.join(imgs_folder,image_name)
                 image = Image.open(image_path).convert('RGB')
 
@@ -74,7 +75,6 @@ class RunPatchcore():
                 image = self.loader(image).unsqueeze(0)
                 test_img_tensor = image.to('cpu', torch.float)
                 
-
                 # PatchCore Inference
                 HeatMap_Size = [original_size_height, original_size_width]
                 
