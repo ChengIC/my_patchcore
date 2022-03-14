@@ -5,7 +5,7 @@ from save_utils import genTimeStamp
 if __name__ == "__main__":
     ts = genTimeStamp()
     test_imgs_folder = './datasets/full_body/test/objs'
-    model_zoo_folder = './model_zoo/2022_02_24_14_38_03'
+    model_zoo_folder = './model_zoo/2022_03_01_14_51_00'
     for roots, dirs, files in os.walk(model_zoo_folder):
         if 'training_config.json' in files:
             

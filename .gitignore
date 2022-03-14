@@ -134,3 +134,5 @@ dmypy.json
 /processed_results
 /model_test
 /results_example
+/exp_notebook
+/model_zoos_regional
