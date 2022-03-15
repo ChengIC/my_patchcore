@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader,TensorDataset
 from torch import tensor
 from torchvision import transforms
 
-class laod_THzCore():
+class load_THzCore():
 
     def __init__(self,save_model_dir = './model_zoos_regional'):
         self.region_types = ['leg','arm','main_body']
@@ -69,7 +69,7 @@ class laod_THzCore():
 
 if __name__ == "__main__":
         save_model_dir = './model_zoos_regional'
-        THzCore = laod_THzCore(save_model_dir)
+        THzCore = load_THzCore(save_model_dir)
         img_folder = './datasets/region_body/my_test'
         for img_file in os.listdir(img_folder):
             if 'jpg' in img_file:
