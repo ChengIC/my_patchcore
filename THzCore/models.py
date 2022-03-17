@@ -128,16 +128,19 @@ class PatchCore(KNNExtractor):
 				eps=self.coreset_eps,
 			)
 			self.patch_lib = self.patch_lib[self.coreset_idx]
+		tobesave = self.resize , self.average , self.patch_lib ,self.n_reweight, self.image_size, self.blur 
+		return tobesave
 		
-		return 	self.resize , self.average , self.patch_lib ,self.n_reweight, self.image_size, self.blur 
-		
-	def inference (self, sample, resize, average, patch_lib, n_reweight, image_size, blur):
-		self.resize = resize
-		self.average = average
-		self.patch_lib = patch_lib
-		self.n_reweight = n_reweight
-		self.image_size = image_size
-		self.blur = blur
+	def inference (self, sample, tobesave, resize=None):
+		self.resize = tobesave[0]
+		self.average = tobesave[1]
+		self.patch_lib = tobesave[2]
+		self.n_reweight = tobesave[3]
+		self.image_size = tobesave[4]
+		self.blur = tobesave[5]
+
+		if resize!=None:
+			self.image_size = resize
 
 		feature_maps = self(sample)
 		resized_maps = [self.resize(self.average(fmap)) for fmap in feature_maps]
@@ -175,8 +178,6 @@ class PatchCore(KNNExtractor):
 
 		return s, s_map
 
-
-
 	def predict(self, sample):		
 		feature_maps = self(sample)
 		resized_maps = [self.resize(self.average(fmap)) for fmap in feature_maps]
@@ -210,6 +211,7 @@ class PatchCore(KNNExtractor):
 		s_map = self.blur(s_map)
 
 		return s, s_map
+
 
 
 	def get_parameters(self):
