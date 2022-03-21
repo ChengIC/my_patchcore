@@ -5,6 +5,7 @@ import torch
 from cores_utils import genTimeStamp, SplitList, Image2AnomoBox, readXML,IoU,savePatchImg
 import warnings # for some torch warnings regarding depreciation
 warnings.filterwarnings("ignore")
+import json
 
 class THzCore():
 	
@@ -21,31 +22,39 @@ class THzCore():
 		self.normal_imgs_dir=normal_imgs_dir
 		self.abnormal_imgs_dir=abnormal_imgs_dir
 
-
 	def train_1st_stage(self):
 		firstDS = genDS(training_folder=self.normal_imgs_dir,
 						resize_box=None)
 
 		percentage =  2/len(os.listdir(self.normal_imgs_dir))
 		if percentage>1:
-			train_ds,self.ds_loader = firstDS.genTrainDS()
+			train_ds,self.ds_loader, resize_box= firstDS.genTrainDS()
 		else:
-			train_ds,self.ds_loader = firstDS.genTrainDS(percentage)
-
+			train_ds,self.ds_loader, resize_box = firstDS.genTrainDS(percentage)
 		self.tobesaved = self.first_model.fit(train_ds)
 
-		self.models_dir = './THzCore/CoreModels/' + genTimeStamp() + '/first_model'
+		self.models_dir = './THzCore/CoreModels/' + genTimeStamp() 
 		if not os.path.exists(self.models_dir):
 			os.makedirs (self.models_dir)
-		train_tar = os.path.join(self.models_dir, 'THzCore_1st_Path.tar')
-		train_path = os.path.join(self.models_dir, 'THzCore_1st_Path')
+
+		self.models_dir1 = os.path.join(self.models_dir,'first_model')
+		if not os.path.exists(self.models_dir1):
+			os.makedirs (self.models_dir1)
+		train_tar = os.path.join(self.models_dir1, 'Core_Path.tar')
+		train_path = os.path.join(self.models_dir1, 'Core_Path')
 		torch.save(self.tobesaved, train_tar)
 		torch.save(self.first_model.state_dict(), train_path)
 
+		json_filePath = os.path.join(self.models_dir1, 'loader_info.json')
+		data_dict = {'box':resize_box}
+		json_string = json.dumps(data_dict)
+		with open(json_filePath, 'w') as outfile:
+			outfile.write(json_string)
 
 	def prep_2nd_stage(self,annotation_dir):
-		normal_imgs = SplitList(self.normal_imgs_dir,percentage=0.2)
-		abnormal_imgs = SplitList(self.abnormal_imgs_dir,percentage=0.2)
+		print ('Prepare data for 2nd stage training')
+		normal_imgs = SplitList(self.normal_imgs_dir,percentage=0.02)
+		abnormal_imgs = SplitList(self.abnormal_imgs_dir,percentage=0.02)
 		
 		self.second_img_paths = os.path.join(self.models_dir,'sec_imgs')
 		if not os.path.exists(self.second_img_paths):
@@ -74,26 +83,30 @@ class THzCore():
 						savePatchImg(a_im,bbox0,self.objs_img_paths)
 		
 	def train_2nd_stage(self):
+		print ('Begin 2nd stage training')
 		secDS = genDS(training_folder=self.second_img_paths,
 				resize_box=None)
-		train_ds2,self.ds_loader2 = secDS.genTrainDS()
 
-		percentage =  2/len(os.listdir(self.normal_imgs_dir))
+		percentage =  20/len(os.listdir(self.normal_imgs_dir))
 		if percentage>1:
-			train_ds2,self.ds_loader = secDS.genTrainDS()
+			train_ds2, self.ds_loader, resize_box = secDS.genTrainDS()
 		else:
-			train_ds2,self.ds_loader = secDS.genTrainDS(percentage)
+			train_ds2, self.ds_loader, resize_box = secDS.genTrainDS(percentage)
 
 		self.tobesaved2 = self.second_model.fit(train_ds2)
-		
+
 		self.models_dir2 = os.path.join(self.models_dir,'sec_model')
 		if not os.path.exists(self.models_dir2):
 			os.makedirs (self.models_dir2)
-		train_tar = os.path.join(self.models_dir2, 'THzCore_2nd_Path.tar')
-		train_path = os.path.join(self.models_dir2, 'THzCore_2nd_Path')
+		train_tar = os.path.join(self.models_dir2, 'Core_Path.tar')
+		train_path = os.path.join(self.models_dir2, 'Core_Path')
 		torch.save(self.tobesaved2, train_tar)
 		torch.save(self.second_model.state_dict(), train_path)
-	
+		json_filePath = os.path.join(self.models_dir2, 'loader_info.json')
+		data_dict = {'box':resize_box}
+		json_string = json.dumps(data_dict)
+		with open(json_filePath, 'w') as outfile:
+			outfile.write(json_string)
 
 if __name__ == "__main__":
 	normal_folder =  './datasets/THz_Body/train/good'
