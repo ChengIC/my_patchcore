@@ -9,13 +9,17 @@ from torchvision import transforms
 import random
 import cv2
 
+random.seed(20220308)
+
+IMG_FORMATS = ['bmp', 'dng', 'jpeg', 'jpg', 'mpo', 'png', 'tif', 'tiff', 'webp']  # include image suffixes
+
 class Process_Train_Folder:
 
     def check_size_folder(training_folder):
         h_dict=[]
         w_dict=[]
         for img_file in os.listdir(training_folder):
-            if '.jpg' in img_file:
+            if img_file.split('.')[-1] in IMG_FORMATS:
                 img_path = os.path.join(training_folder,img_file)
                 im = cv2.imread(img_path)
                 h, w, _ = im.shape
@@ -37,7 +41,7 @@ class Process_Train_Folder:
         height_list=[]
         width_list=[]
         for img_file in os.listdir(training_folder):
-            if '.jpg' in img_file:
+            if img_file.split('.')[-1] in IMG_FORMATS:
                 img_path = os.path.join(training_folder,img_file)
                 im = cv2.imread(img_path)
                 h, w, _ = im.shape
@@ -81,23 +85,27 @@ class genDS():
         folder_files_list = os.listdir(self.training_folder)
         random.shuffle(folder_files_list)
         training_list = folder_files_list[0:int(len_folder*percentage)]
+
+        ds_info['im_id'] = []
         for img_id in training_list:
-            if '.jpg' in img_id:
+            if img_id.split('.')[-1] in IMG_FORMATS:
                 img_path = os.path.join(self.training_folder, img_id)
                 train_im = Image.open(img_path).convert('RGB')
                 train_im = self.loader(train_im)
-
                 train_label = tensor([0])
                 train_ims.append(train_im.numpy())
                 train_labels.append(train_label.numpy())
 
+                ds_info['im_id'].append(img_id)
+
         train_ims = np.array(train_ims)
         train_labels = np.array(train_labels)
         print ('Training Tensor Shape is' + str(train_ims.shape))
-        ds_info['train_ims_shape'] = train_ims.shape
         train_ims = torch.from_numpy(train_ims)
         train_labels = torch.from_numpy(train_labels)
         train_data = TensorDataset(train_ims,train_labels)
         train_ds = DataLoader(train_data)
 
-        return train_ds, self.loader, self.resize_box
+        ds_info['box'] = self.resize_box
+
+        return train_ds, self.loader, ds_info

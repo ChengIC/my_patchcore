@@ -10,6 +10,9 @@ import xml.etree.ElementTree as ET
 import torchvision.ops.boxes as bops
 import cv2
 import string
+
+random.seed(20220308)
+
 def unique_id(size):
     chars = list(set(string.ascii_uppercase + string.digits).difference('LIO01'))
     return ''.join(random.choices(chars, k=size))
@@ -25,7 +28,7 @@ def SplitList(dir,percentage=0.2):
 	random.shuffle(img_list)
 	len_list = int(len(os.listdir(dir))*percentage)
 	my_SplitList=[]
-	for idx in range(0,len_list+1):
+	for idx in range(0,len_list):
 		im_id = img_list[idx]
 		if '.jpg' in im_id:
 			my_SplitList.append(os.path.join(dir,im_id))
@@ -62,7 +65,7 @@ def AnomalyToBBox(pxl_lvl_anom_score, anomo_threshold=0.75, x_ratio=1, y_ratio=1
     detected_box_list = np.array(detected_box_list)
     return detected_box_list
 
-def Image2AnomoBox(imPath,PatchCore_loader,PacthCore_model,PacthCore_model_tar):
+def Image2AnomoBox(imPath,PatchCore_loader,PacthCore_model,PacthCore_model_tar,anomo_threshold=0.5):
     image = Image.open(imPath).convert('RGB')
     original_size_width, original_size_height = image.size
     image = PatchCore_loader(image).unsqueeze(0)
@@ -70,12 +73,12 @@ def Image2AnomoBox(imPath,PatchCore_loader,PacthCore_model,PacthCore_model_tar):
     # print (test_img_tensor.shape)
     HeatMap_Size = [original_size_height, original_size_width]
     _, pxl_lvl_anom_score = PacthCore_model.inference(test_img_tensor,PacthCore_model_tar,HeatMap_Size)
-    detected_box_list = AnomalyToBBox(pxl_lvl_anom_score, anomo_threshold=0.75)
+    detected_box_list = AnomalyToBBox(pxl_lvl_anom_score, anomo_threshold=anomo_threshold)
     return detected_box_list
 
-def readXML(annotation_folder, image_name):
+def readXML(annotation_folder, image_name, 
+            classes = ['GA', 'KK', 'SS' , 'MD', 'CK' , 'WB' , 'KC' , 'CP', 'CL', 'LW', 'UNKNOWN']):
     box_dict = {}
-    classes = ['GA', 'KK', 'SS' , 'MD', 'CK' , 'WB' , 'KC' , 'CP', 'CL', 'LW', 'UNKNOWN']
     xml_filePath = os.path.join(annotation_folder ,image_name.split('.jpg')[0] + '.xml')
     xml_file = open(xml_filePath, encoding='UTF-8')
     tree = ET.parse(xml_file)
@@ -108,5 +111,7 @@ def savePatchImg(input_img_path,bbox,output_img_dir):
     crop_img = img[ymin:ymax,xmin:xmax]
     output_img_path = os.path.join(output_img_dir,unique_id(18)+'.jpg')
     cv2.imwrite(output_img_path,crop_img)
+
+    return output_img_path
 
     
