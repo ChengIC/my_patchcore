@@ -51,6 +51,13 @@ class Process_Train_Folder:
         height_list = np.array(height_list)
         return [int(np.mean(height_list)),int(np.mean(width_list))]
 
+    def qualified_patch(img_size,resize_box):
+        if img_size[0] >= 2*resize_box[0] or img_size[0] < 0.25*resize_box[0]:
+            return False
+        if img_size[1] >= 2*resize_box[1] or img_size[1] < 0.25*resize_box[1]:
+            return False
+        else:
+            return True
 
 class genDS():
     def __init__(self,training_folder,resize_box=None):
@@ -91,6 +98,9 @@ class genDS():
             if img_id.split('.')[-1] in IMG_FORMATS:
                 img_path = os.path.join(self.training_folder, img_id)
                 train_im = Image.open(img_path).convert('RGB')
+                width, height = train_im.size
+                if not Process_Train_Folder.qualified_patch([height, width],self.resize_box):
+                    continue
                 train_im = self.loader(train_im)
                 train_label = tensor([0])
                 train_ims.append(train_im.numpy())
