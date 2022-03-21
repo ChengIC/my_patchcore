@@ -23,15 +23,17 @@ class THzCore():
 		self.abnormal_imgs_dir=abnormal_imgs_dir
 		self.patches_info = {}
 
-	def train_1st_stage(self):
+	def train_1st_stage(self,normal_p=0.2):
 		firstDS = genDS(training_folder=self.normal_imgs_dir,
 						resize_box=None)
 
-		percentage =  2/len(os.listdir(self.normal_imgs_dir))
-		if percentage>1:
-			train_ds,self.ds_loader, ds_info = firstDS.genTrainDS()
-		else:
-			train_ds,self.ds_loader, ds_info = firstDS.genTrainDS(percentage)
+		# percentage =  2/len(os.listdir(self.normal_imgs_dir))
+		# if percentage>1:
+		# 	train_ds,self.ds_loader, ds_info = firstDS.genTrainDS()
+		# else:
+		# 	train_ds,self.ds_loader, ds_info = firstDS.genTrainDS(percentage)
+		
+		train_ds,self.ds_loader, ds_info = firstDS.genTrainDS(normal_p)
 		self.tobesaved = self.first_model.fit(train_ds)
 
 		self.models_dir = './THzCore/CoreModels/' + genTimeStamp() 
