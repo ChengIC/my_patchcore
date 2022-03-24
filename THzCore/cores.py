@@ -26,12 +26,6 @@ class THzCore():
 	def train_1st_stage(self,normal_p=0.2):
 		firstDS = genDS(training_folder=self.normal_imgs_dir,
 						resize_box=None)
-
-		# percentage =  2/len(os.listdir(self.normal_imgs_dir))
-		# if percentage>1:
-		# 	train_ds,self.ds_loader, ds_info = firstDS.genTrainDS()
-		# else:
-		# 	train_ds,self.ds_loader, ds_info = firstDS.genTrainDS(percentage)
 		
 		train_ds,self.ds_loader, ds_info = firstDS.genTrainDS(normal_p)
 		self.tobesaved = self.first_model.fit(train_ds)
@@ -55,7 +49,7 @@ class THzCore():
 
 	def prep_2nd_stage(self,annotation_dir,
 						normal_p=1, abnormal_p=0.2, 
-						threshold_normal=0.5, threshold_abnormal=0.75):
+						threshold_1st_stage=0.5, threshold_2nd_stage=0.75):
 		print ('Prepare data for 2nd stage training')
 		normal_imgs = SplitList(self.normal_imgs_dir,percentage=normal_p)
 		abnormal_imgs = SplitList(self.abnormal_imgs_dir,percentage=abnormal_p)
@@ -70,7 +64,7 @@ class THzCore():
 
 		for n_im in normal_imgs:
 			n_im_a_box_list = Image2AnomoBox(n_im,self.ds_loader,self.first_model,self.tobesaved, 
-											anomo_threshold=threshold_normal)
+											anomo_threshold=threshold_1st_stage)
 			if len(n_im_a_box_list)>0:
 				for bbox in n_im_a_box_list:
 					output_img_path = savePatchImg(n_im,bbox,self.second_img_paths)
@@ -81,7 +75,7 @@ class THzCore():
 
 		for a_im in abnormal_imgs:
 			a_im_a_box_list = Image2AnomoBox(a_im, self.ds_loader,self.first_model,self.tobesaved, 
-											anomo_threshold=threshold_abnormal)
+											anomo_threshold=threshold_2nd_stage)
 			image_name = a_im.split('/')[-1]
 			box_dict = readXML(annotation_dir, image_name)
 			for obj in box_dict:
@@ -111,13 +105,13 @@ class THzCore():
 		secDS = genDS(training_folder=self.second_img_paths,
 				resize_box=None)
 
-		# percentage =  20/len(os.listdir(self.second_img_paths))
-		# if percentage>1:
-		# 	train_ds2, self.ds_loader, ds_info = secDS.genTrainDS()
-		# else:
-		# 	train_ds2, self.ds_loader, ds_info = secDS.genTrainDS(percentage)
+		percentage =  20/len(os.listdir(self.second_img_paths))
+		if percentage>1:
+			train_ds2, self.ds_loader, ds_info = secDS.genTrainDS()
+		else:
+			train_ds2, self.ds_loader, ds_info = secDS.genTrainDS(percentage)
 
-		train_ds2, self.ds_loader, ds_info = secDS.genTrainDS()
+		# train_ds2, self.ds_loader, ds_info = secDS.genTrainDS()
 
 		self.tobesaved2 = self.second_model.fit(train_ds2)
 
@@ -134,12 +128,12 @@ class THzCore():
 			outfile.write(json_string)
 
 if __name__ == "__main__":
-	normal_folder =  './datasets/THz_Body/train/good'
+	normal_folder =  './datasets/full_body/train/good'
 	abnormal_folder= './datasets/full_body/test/objs'
 	annotation_dir ='./datasets/full_body/Annotations'
 	mycore = THzCore(normal_folder,abnormal_folder)
-	mycore.train_1st_stage()
-	mycore.prep_2nd_stage(annotation_dir,normal_p=0.02, abnormal_p=0.02)
+	mycore.train_1st_stage(normal_p=0.2)
+	mycore.prep_2nd_stage(annotation_dir,normal_p=0.2, abnormal_p=0.2)
 	mycore.train_2nd_stage()
 	
 

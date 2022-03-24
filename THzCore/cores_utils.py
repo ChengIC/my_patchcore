@@ -114,4 +114,19 @@ def savePatchImg(input_img_path,bbox,output_img_dir):
 
     return output_img_path
 
+def WriteDetectImage(input_image_path,annotation_folder,detected_box_list,
+                            image_name,output_img_path):
+    img_1 = cv2.imread(input_image_path)
+    img_2= cv2.imread(input_image_path)
+    for detected_box in detected_box_list:
+        cv2.rectangle(img_1, (detected_box[0], detected_box[1]), 
+                                (detected_box[2], detected_box[3]), (255,0,0), 2)
     
+    box_dict = readXML(annotation_folder, image_name)
+    for cls in box_dict:
+        bbox = [int(bb) for bb in box_dict[cls]]
+        cv2.rectangle(img_2, (bbox[0], bbox[1]), (bbox[2], bbox[3]),  (0, 0, 255), 2)
+
+    numpy_horizontal = np.hstack((img_2, img_1))
+
+    cv2.imwrite(output_img_path, numpy_horizontal)
