@@ -129,8 +129,8 @@ class THzCore():
 
 if __name__ == "__main__":
 	normal_folder =  './datasets/full_body/train/good'
-	abnormal_folder= './datasets/full_body/test/objs'
-	annotation_dir ='./datasets/full_body/Annotations'
+	abnormal_folder = './datasets/full_body/test/objs'
+	annotation_dir = './datasets/full_body/Annotations'
 	mycore = THzCore(normal_folder,abnormal_folder)
 	mycore.train_1st_stage(normal_p=0.2)
 	mycore.prep_2nd_stage(annotation_dir,normal_p=0.2, abnormal_p=0.2)
