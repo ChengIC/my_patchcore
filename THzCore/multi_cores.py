@@ -15,7 +15,7 @@ class MultiCores():
 	
 	def train(self,
 			scale_range=[i/10 for i in range(1,11)],
-			normal_p=0.02):
+			normal_p=0.1):
 		
 		if self.training_img_folder==None:
 			raise 'Please define training folder of normal images'
@@ -28,6 +28,8 @@ class MultiCores():
 			
 			# prepare dataset
 			p = normal_p/s
+			if p>=1:
+				p=1
 			print ('Training image at scale %.2f with %.2f percent'%(s,p))
 			train_ds, _, ds_info = DS.genTrainDS(p)
 			
@@ -96,6 +98,14 @@ class MultiCores():
 				with open(json_filePath, 'w') as outfile:
 					outfile.write(json_string)
 
+	def inference_dir(self,img_dir=None,multicore_dir=None):
+		if img_dir == None:
+			raise 'No valid img dir'
+
+		for img_name in os.listdir(img_dir):
+			img_path = os.path.join(img_dir,img_name)
+			self.inference(img_path,multicore_dir)
+
 	def visualize(self,json_path=None):
 		if json_path == None:
 			raise 'No result for visualization'
@@ -125,14 +135,15 @@ class MultiCores():
 				self.visualize(json_path)
 			except:
 				pass
-
+	
+	
 
 if __name__ == "__main__":
 	normal_folder =  './datasets/full_body/train/good'
 	mycore = MultiCores(normal_folder)
-	# mycore.inference(img_path='./datasets/full_body/test/objs/D_P_F1_CK_F_LA_WB_F_S_front_0907140855.jpg',
+	# mycore.inference_dir(img_dir='./datasets/full_body/test/objs',
 	# 				multicore_dir='./THzCore/MultiCoreModels/2022_03_27_20_35_11')
 
 	# mycore.visualize(json_path='./THzCore/runs/multicores/2022_03_28_13_35_41/D_P_F1_CK_F_LA_WB_F_S_front_0907140855_scale_0.2.json')
 
-	mycore.vis_form_dir('./THzCore/runs/multicores/2022_03_28_13_35_41')
+	# mycore.vis_form_dir('./THzCore/runs/multicores/2022_03_28_13_35_41')
