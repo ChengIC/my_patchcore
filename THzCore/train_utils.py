@@ -51,24 +51,19 @@ class Process_Train_Folder:
         height_list = np.array(height_list)
         return [int(np.mean(height_list)),int(np.mean(width_list))]
 
-    def qualified_patch(img_size,resize_box):
-        if img_size[0] >= 2*resize_box[0] or img_size[0] < 0.25*resize_box[0]:
-            return False
-        if img_size[1] >= 2*resize_box[1] or img_size[1] < 0.25*resize_box[1]:
-            return False
-        else:
-            return True
-
 class genDS():
-    def __init__(self,training_folder,resize_box=None):
+    def __init__(self,
+                training_folder,
+                scale=1.0,
+                resize_box=None):
         self.resize_box = resize_box
         
         IMAGENET_MEAN = tensor([.485, .456, .406])
         IMAGENET_STD = tensor([.229, .224, .225])
         if resize_box==None:
             self.resize_box=Process_Train_Folder.mean_size_folder(training_folder)
-            if self.resize_box[0] * self.resize_box[1]<10000:
-                self.resize_box = [100,100]
+            self.resize_box = [int(self.resize_box[0]*scale),int(self.resize_box[1]*scale)]
+            # print (self.resize_box)
             transfoms_paras = [
                         transforms.Resize(self.resize_box, interpolation=transforms.InterpolationMode.BICUBIC),
                         transforms.ToTensor(),
@@ -99,8 +94,6 @@ class genDS():
                 img_path = os.path.join(self.training_folder, img_id)
                 train_im = Image.open(img_path).convert('RGB')
                 width, height = train_im.size
-                if not Process_Train_Folder.qualified_patch([height, width],self.resize_box):
-                    continue
                 train_im = self.loader(train_im)
                 train_label = tensor([0])
                 train_ims.append(train_im.numpy())

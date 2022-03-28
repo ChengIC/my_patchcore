@@ -212,8 +212,6 @@ class PatchCore(KNNExtractor):
 
 		return s, s_map
 
-
-
 	def get_parameters(self):
 		return super().get_parameters({
 			"f_coreset": self.f_coreset,

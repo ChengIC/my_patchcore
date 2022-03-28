@@ -137,3 +137,5 @@ dmypy.json
 /exp_notebook
 /model_zoos_regional
 /THzCore/CoreModels/
+/THzCore/MultiCoreModels/
+/THzCore/runs/

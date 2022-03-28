@@ -10,8 +10,50 @@ import xml.etree.ElementTree as ET
 import torchvision.ops.boxes as bops
 import cv2
 import string
+import json
+from torchvision import transforms
+from torch import tensor
+import matplotlib.pyplot as plt
+import io
 
 random.seed(20220308)
+
+
+def load_img():
+    loader=transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD),
+            ])
+    return loader
+
+def tensor_to_img(x, normalize=False):
+    if normalize:
+        x *= IMAGENET_STD.unsqueeze(-1).unsqueeze(-1)
+        x += IMAGENET_MEAN.unsqueeze(-1).unsqueeze(-1)
+    x =  x.clip(0.,1.).permute(1,2,0).detach().numpy()
+    return x
+
+def pred_to_img(x, range): 
+    range_min, range_max = range
+    x -= range_min
+    if (range_max - range_min) > 0:
+        x /= (range_max - range_min)
+    return tensor_to_img(x)
+
+def show_pred(sample, score, fmap, range):
+    sample_img = tensor_to_img(sample, normalize=True)
+    fmap_img = pred_to_img(fmap, range)
+    # overlay
+    plt.imshow(sample_img)
+    plt.imshow(fmap_img, cmap="jet", alpha=0.5)
+    plt.axis('off')
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', bbox_inches='tight', pad_inches=0, transparent=True)
+    # buf.seek(0)
+    overlay_img = Image.open(buf)
+
+    return overlay_img
+
 
 def unique_id(size):
     chars = list(set(string.ascii_uppercase + string.digits).difference('LIO01'))
@@ -130,3 +172,60 @@ def WriteDetectImage(input_image_path,annotation_folder,detected_box_list,
     numpy_horizontal = np.hstack((img_2, img_1))
 
     cv2.imwrite(output_img_path, numpy_horizontal)
+
+
+def load_model_from_dir(model, dir):
+	state_dict_path = os.path.join(dir,'Core_Path')
+	tar_path = os.path.join(dir,'Core_Path.tar')
+	configPath = os.path.join(dir,'loader_info.json')
+
+	if torch.cuda.is_available():
+		model.load_state_dict(torch.load(state_dict_path))
+		model_paras = torch.load(tar_path)
+	else:
+		model.load_state_dict(torch.load(state_dict_path,map_location ='cpu'))
+		model_paras = torch.load(tar_path,map_location ='cpu')
+	
+	with open(configPath) as json_file:
+			data = json.load(json_file)
+			resize_box=data['box']
+
+	return model, model_paras, resize_box
+
+def loader_from_resize(resize_box):
+	IMAGENET_MEAN = tensor([.485, .456, .406])
+	IMAGENET_STD = tensor([.229, .224, .225])
+	transfoms_paras = [
+			transforms.Resize(resize_box, interpolation=transforms.InterpolationMode.BICUBIC),
+			transforms.ToTensor(),
+			transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD),
+	]
+	return transforms.Compose(transfoms_paras)
+
+
+
+def visOverlay(img_path,pxl_lvl_anom_score):
+    sample_img = Image.open(img_path).convert('RGB')
+
+    score_range = pxl_lvl_anom_score.min(), pxl_lvl_anom_score.max()
+    fmap_img = pred_to_img(pxl_lvl_anom_score, score_range)
+    
+    # overlay
+    plt.imshow(sample_img)
+    plt.imshow(fmap_img, cmap="jet", alpha=0.5)
+    plt.axis('off')
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', bbox_inches='tight', pad_inches=0, transparent=True)
+    # buf.seek(0)
+    overlay_img = Image.open(buf)
+
+    width1, height1 = sample_img.size
+    width2, height2 = overlay_img.size
+    if width1!=width2 or height1!=height2:
+        overlay_img = overlay_img.resize((width1, height1))
+    
+    img2 = Image.new("RGB", (width1+width1, height1), "white")
+    img2.paste(sample_img, (0, 0))
+    img2.paste(overlay_img, (width1, 0))
+
+    return img2
