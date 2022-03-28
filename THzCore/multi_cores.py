@@ -11,16 +11,24 @@ import json
 class MultiCores():
 	def __init__(self,
 				training_img_folder=None,
-				inference_mode=False,
-				multicore_dir=None):
+				mode=None,
+				multicore_dir=None,
+				timestring=None):
 		
 		self.training_img_folder=training_img_folder
-		self.timestring = genTimeStamp()
+		self.mode=mode
 		self.multicore_dir=multicore_dir
+		self.timestring = timestring
+		if self.timestring==None:
+			self.timestring = genTimeStamp()
+		
+		if self.mode=='train':
+			if self.training_img_folder==None:
+				raise 'Please define training folder of normal images'
 
-		if inference_mode==True:
+		elif self.mode=='inference' or self.mode=='test':
 			if self.multicore_dir == None:
-				raise 'Please define multicore_dir'
+				raise 'Please define model dir for inference or testing'
 
 			# load multiple patchcore models at the same time
 			self.models_dict = {}
@@ -38,14 +46,11 @@ class MultiCores():
 								'model_paras':model_paras,
 								'resize_box':resize_box,
 					}
+		
+		else:
+			pass
 
-	def train(self,
-			scale_range=[i/10 for i in range(1,11)],
-			normal_p=0.1):
-		
-		if self.training_img_folder==None:
-			raise 'Please define training folder of normal images'
-		
+	def train(self,scale_range=[i/10 for i in range(1,11)]):
 		
 		for s in scale_range:
 			DS = genDS(training_folder=self.training_img_folder,
@@ -53,7 +58,7 @@ class MultiCores():
 						resize_box=None)
 			
 			# prepare dataset
-			p = normal_p/s
+			p = 1-s
 			if p>=1:
 				p=1
 			print ('Training image at scale %.2f with %.2f percent'%(s,p))
@@ -79,7 +84,6 @@ class MultiCores():
 			with open(json_filePath, 'w') as outfile:
 				outfile.write(json_string)
 
-	# def inference
 	def inference(self,img_path):
 		# create exp dir
 		self.exp_dir = os.path.join('./THzCore','runs','multicores',self.timestring)
@@ -161,11 +165,16 @@ class MultiCores():
 
 if __name__ == "__main__":
 	normal_folder =  './datasets/full_body/train/good'
-	mycore = MultiCores(inference_mode=True,multicore_dir='./THzCore/MultiCoreModels/2022_03_27_20_35_11')
+
+	time_string = genTimeStamp()
+	# training
+	mycore = MultiCores(mode='train',training_img_folder='./datasets/full_body/train/good',timestring=time_string)
+	mycore.train()
+
+	# inference
+	mycore = MultiCores(mode='inference',multicore_dir='./THzCore/MultiCoreModels/'+time_string,timestring=time_string)
 	mycore.inference_dir(img_dir='./datasets/full_body/test/objs')
-	# mycore.inference_dir(img_dir='./datasets/full_body/test/objs',
-	# 				multicore_dir='./THzCore/MultiCoreModels/2022_03_27_20_35_11')
 
-	# mycore.visualize(json_path='./THzCore/runs/multicores/2022_03_28_13_35_41/D_P_F1_CK_F_LA_WB_F_S_front_0907140855_scale_0.2.json')
-
-	# mycore.vis_form_dir('./THzCore/runs/multicores/2022_03_28_13_35_41')
+	# visualize
+	mycore = MultiCores()
+	mycore.vis_form_dir('./THzCore/runs/multicores/'+time_string)
