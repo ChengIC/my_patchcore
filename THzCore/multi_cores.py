@@ -9,10 +9,36 @@ import json
 
 
 class MultiCores():
-	def __init__(self,training_img_folder=None):
+	def __init__(self,
+				training_img_folder=None,
+				inference_mode=False,
+				multicore_dir=None):
+		
 		self.training_img_folder=training_img_folder
 		self.timestring = genTimeStamp()
-	
+		self.multicore_dir=multicore_dir
+
+		if inference_mode==True:
+			if self.multicore_dir == None:
+				raise 'Please define multicore_dir'
+
+			# load multiple patchcore models at the same time
+			self.models_dict = {}
+			idx=0
+			for roots, _, files in os.walk(self.multicore_dir):
+				if 'Core_Path.tar' in files:
+					idx+=1
+					model = PatchCore(f_coreset=.10, 
+									backbone_name="wide_resnet50_2")
+					model, model_paras, resize_box = load_model_from_dir(model, roots)
+					
+					self.models_dict["model{}".format(idx)] = {
+								'roots':roots,
+								'model':model,
+								'model_paras':model_paras,
+								'resize_box':resize_box,
+					}
+
 	def train(self,
 			scale_range=[i/10 for i in range(1,11)],
 			normal_p=0.1):
@@ -54,57 +80,52 @@ class MultiCores():
 				outfile.write(json_string)
 
 	# def inference
-	def inference(self,img_path,multicore_dir=None):
-		if multicore_dir == None:
-			raise 'Please define multicore_dir'
-
+	def inference(self,img_path):
 		# create exp dir
 		self.exp_dir = os.path.join('./THzCore','runs','multicores',self.timestring)
 		if not os.path.exists(self.exp_dir):
 			os.makedirs(self.exp_dir)
-
-		# load patchcore one by one
-		model = PatchCore(f_coreset=.10, 
-					backbone_name="wide_resnet50_2")
+		
+		# inference image with pathcore one by one
 		exp_info = {}
-		for roots, _, files in os.walk(multicore_dir):
-			if 'Core_Path.tar' in files:
-				model, model_paras, resize_box = load_model_from_dir(model, roots)
-				loader = loader_from_resize(resize_box)
-				
-				# load image tensor
-				image = Image.open(img_path).convert('RGB')
-				copy_image = image.copy()
-				original_size_width, original_size_height = image.size
-				image = loader(image).unsqueeze(0)
-				test_img_tensor = image.to('cpu', torch.float)
+		for single_model in self.models_dict:
+			roots = self.models_dict[single_model]['roots']
+			model = self.models_dict[single_model]['model']
+			model_paras = self.models_dict[single_model]['model_paras']
+			resize_box = self.models_dict[single_model]['resize_box']
+			
+			# load image tensor
+			loader = loader_from_resize(resize_box)
+			image = Image.open(img_path).convert('RGB')
+			copy_image = image.copy()
+			original_size_width, original_size_height = image.size
+			image = loader(image).unsqueeze(0)
+			test_img_tensor = image.to('cpu', torch.float)
 
-				# inference
-				HeatMap_Size = [original_size_height, original_size_width]
-				_, pxl_lvl_anom_score = model.inference (test_img_tensor, model_paras, HeatMap_Size)
-				# detected_box_list = AnomalyToBBox(pxl_lvl_anom_score, anomo_threshold=0.75)
-				# print (pxl_lvl_anom_score.shape)
-				exp_info ={
-					'img_path':img_path,
-					'pxl_lvl_anom_score':pxl_lvl_anom_score.numpy().tolist(),
-					'resize_box':resize_box,
-					'roots_dir':roots,
-				}
-				img_id = img_path.split('/')[-1].split('.')[0]
-				s = roots.split('/')[-1]
-				json_file_name = img_id + '_scale_' + s + '.json' 
-				json_filePath = os.path.join(self.exp_dir, json_file_name)
-				json_string = json.dumps(exp_info)
-				with open(json_filePath, 'w') as outfile:
-					outfile.write(json_string)
+			# inference
+			HeatMap_Size = [original_size_height, original_size_width]
+			_, pxl_lvl_anom_score = model.inference (test_img_tensor, model_paras, HeatMap_Size)
+			exp_info ={
+				'img_path':img_path,
+				'pxl_lvl_anom_score':pxl_lvl_anom_score.numpy().tolist(),
+				'resize_box':resize_box,
+				'roots_dir':roots,
+			}
+			img_id = img_path.split('/')[-1].split('.')[0]
+			s = roots.split('/')[-1]
+			json_file_name = img_id + '_scale_' + s + '.json' 
+			json_filePath = os.path.join(self.exp_dir, json_file_name)
+			json_string = json.dumps(exp_info)
+			with open(json_filePath, 'w') as outfile:
+				outfile.write(json_string)
 
-	def inference_dir(self,img_dir=None,multicore_dir=None):
+	def inference_dir(self,img_dir=None):
 		if img_dir == None:
 			raise 'No valid img dir'
 
 		for img_name in os.listdir(img_dir):
 			img_path = os.path.join(img_dir,img_name)
-			self.inference(img_path,multicore_dir)
+			self.inference(img_path)
 
 	def visualize(self,json_path=None):
 		if json_path == None:
@@ -140,7 +161,8 @@ class MultiCores():
 
 if __name__ == "__main__":
 	normal_folder =  './datasets/full_body/train/good'
-	mycore = MultiCores(normal_folder)
+	mycore = MultiCores(inference_mode=True,multicore_dir='./THzCore/MultiCoreModels/2022_03_27_20_35_11')
+	mycore.inference_dir(img_dir='./datasets/full_body/test/objs')
 	# mycore.inference_dir(img_dir='./datasets/full_body/test/objs',
 	# 				multicore_dir='./THzCore/MultiCoreModels/2022_03_27_20_35_11')
 
