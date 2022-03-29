@@ -67,7 +67,7 @@ class MultiCores():
 		self.tobesaved = self.model.fit(train_ds)
 		
 		# save model
-		self.model_dir = os.path.join('./THzCore','MultiCoreModels',config_data['config_id'],self.timestring)
+		self.model_dir = os.path.join('./THzCore','MultiCoreModels',self.timestring, config_data['config_id'])
 		if not os.path.exists(self.model_dir):
 			os.makedirs(self.model_dir)
 		train_tar = os.path.join(self.model_dir,'Core_Path.tar')
@@ -119,8 +119,8 @@ class MultiCores():
 				'roots_dir':roots,
 			}
 			img_id = img_path.split('/')[-1].split('.')[0]
-			s = roots.split('/')[-2]
-			json_file_name = img_id + '_conf_' + s + '.json' 
+			s = roots.split('/')[-1]
+			json_file_name = img_id + '_config_' + s + '.json' 
 			json_filePath = os.path.join(self.exp_dir, json_file_name)
 			json_string = json.dumps(exp_info)
 			with open(json_filePath, 'w') as outfile:
@@ -169,7 +169,8 @@ class MultiCores():
 if __name__ == "__main__":
 	normal_folder =  './datasets/full_body/train/good'
 	# gen config
-	config_dir = genConfig().genMultiConfig(config_idea='human_depended',normal_img_folder='./datasets/full_body/train/good')
+	# config_dir = genConfig().genMultiConfig(config_idea='human_depended',normal_img_folder='./datasets/full_body/train/good')
+	config_dir = genConfig().genMultiConfig(config_idea='shuffle_batch',normal_img_folder='./datasets/full_body/train/good')
 
 	time_string = genTimeStamp()
 	# training
@@ -177,7 +178,7 @@ if __name__ == "__main__":
 	mycore.train_multicores(config_dir)
 
 	# inference
-	mycore = MultiCores(mode='inference',multicore_dir='./THzCore/MultiCoreModels/'+time_string,timestring=time_string)
+	mycore = MultiCores(mode='inference',multicore_dir='./THzCore/MultiCoreModels/' + time_string)
 	mycore.inference_dir(img_dir='./datasets/full_body/test/objs')
 
 	# visualize

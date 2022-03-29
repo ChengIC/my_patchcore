@@ -15,6 +15,7 @@ def genTimeStamp():
     TimeStamp = time.strftime("%Y_%m_%d_%H_%M_%S", timeArray)
     return TimeStamp
 
+random.seed(20220329)
 
 class genConfig():
 
@@ -27,6 +28,7 @@ class genConfig():
     def genMultiConfig(self,config_idea='default',
                 normal_img_folder=None):
 
+        set_scale=0.1
         if config_idea == 'human_depended':
             imgs_dict = {}
             for img_file in os.listdir(normal_img_folder):      
@@ -39,9 +41,9 @@ class genConfig():
                 config_data = {
                     'img_ids':imgs_dict[human_model],
                     'config_id':human_model + '_' + unique_id(8),
-                    'scale':0.5,
+                    'scale':set_scale,
                 }
-                config_data['info'] = "image scale: {}, config idea: {}, human model: {} ".format(config_data['scale'],'human_depended',human_model )
+                config_data['info'] = "image scale: {}, config idea: {}, human model: {} ".format(config_data['scale'],config_idea,human_model )
                 
                 # save config data
                 json_file_name = config_data['config_id']+'.json'
@@ -49,7 +51,35 @@ class genConfig():
                 json_string = json.dumps(config_data)
                 with open(json_filePath, 'w') as outfile:
                     outfile.write(json_string)
-        
+
+        elif config_idea == 'shuffle_batch':
+            file_list = os.listdir(normal_img_folder)
+            random.shuffle(file_list)
+            img_ids = []
+            idx=0
+            for img_file in file_list:
+                img_ids.append(img_file)
+                if len(img_ids)>= int(0.1*len(file_list)):
+                    config_data = {
+                        'img_ids':img_ids,
+                        'config_id':'bacth_' + str(idx) + '_' + unique_id(8),
+                        'scale':set_scale,
+                        }
+                    config_data['info'] = "image scale: {}, config idea: {}, bacth idx: {} ".format(config_data['scale'],config_idea,idx)
+
+                    # save config data
+                    json_file_name = config_data['config_id']+'.json'
+                    json_filePath = os.path.join(self.config_dir, json_file_name)
+                    json_string = json.dumps(config_data)
+                    with open(json_filePath, 'w') as outfile:
+                        outfile.write(json_string)
+
+                    # reset image id and batch idx
+                    img_ids = []
+                    idx+=1
+        else:
+            pass
+
         print ('Finish configs generation')
         return self.config_dir
 
