@@ -39,7 +39,7 @@ class genConfig():
                 config_data = {
                     'img_ids':imgs_dict[human_model],
                     'config_id':human_model + '_' + unique_id(8),
-                    'scale':0.1,
+                    'scale':0.5,
                 }
                 config_data['info'] = "image scale: {}, config idea: {}, human model: {} ".format(config_data['scale'],'human_depended',human_model )
                 
