@@ -112,3 +112,32 @@ class genDS():
         ds_info['box'] = self.resize_box
 
         return train_ds, self.loader, ds_info
+
+    def genTrainDS_by_config(self,config):
+        ds_info = {}
+        train_ims = []
+        train_labels = []
+
+        ds_info['im_id'] = []
+        for img_id in config['img_ids']:
+            if img_id.split('.')[-1] in IMG_FORMATS:
+                img_path = os.path.join(self.training_folder, img_id)
+                train_im = Image.open(img_path).convert('RGB')
+                train_im = self.loader(train_im)
+                train_label = tensor([0])
+                train_ims.append(train_im.numpy())
+                train_labels.append(train_label.numpy())
+
+                ds_info['im_id'].append(img_id)
+
+        train_ims = np.array(train_ims)
+        train_labels = np.array(train_labels)
+        print ('Training Tensor Shape is' + str(train_ims.shape))
+        train_ims = torch.from_numpy(train_ims)
+        train_labels = torch.from_numpy(train_labels)
+        train_data = TensorDataset(train_ims,train_labels)
+        train_ds = DataLoader(train_data)
+
+        ds_info['box'] = self.resize_box
+
+        return train_ds, self.loader, ds_info
