@@ -227,5 +227,23 @@ def visOverlay(img_path,pxl_lvl_anom_score):
     img2 = Image.new("RGB", (width1+width1, height1), "white")
     img2.paste(sample_img, (0, 0))
     img2.paste(overlay_img, (width1, 0))
+    buf.close()
 
     return img2
+
+def PixelScore2Boxes(pxl_lvl_anom_score):
+    anomo_thresholds= [0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.85,0.9,0.95]
+    score_range = pxl_lvl_anom_score.min(), pxl_lvl_anom_score.max()
+    fmap_img = pred_to_img(pxl_lvl_anom_score, score_range)
+    detected_box_list = {}
+    for anomo_threshold in anomo_thresholds:
+        mask = fmap_img > anomo_threshold
+        label_mask = label(mask[:, :, 0])
+        props = regionprops(label_mask)
+        detected_box_list[str(anomo_threshold)] = []
+        for prop in props:
+            detected_box =  [int(prop.bbox[1]), int(prop.bbox[0]),
+                            int(prop.bbox[3]), int(prop.bbox[2])]  # 1 0 3 2
+            detected_box_list[str(anomo_threshold)].append(detected_box)
+
+    return detected_box_list

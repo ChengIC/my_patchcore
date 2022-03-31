@@ -28,7 +28,7 @@ class genConfig():
     def genMultiConfig(self,config_idea='default',
                 normal_img_folder=None):
 
-        set_scale=0.1
+        set_scale=0.5
         if config_idea == 'human_depended':
             imgs_dict = {}
             for img_file in os.listdir(normal_img_folder):      
