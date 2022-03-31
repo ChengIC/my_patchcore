@@ -19,16 +19,18 @@ random.seed(20220329)
 
 class genConfig():
 
-    def __init__(self):
-
-        self.config_dir = os.path.join('./THzCore','Config', genTimeStamp())
+    def __init__(self, timestring=None):
+        if timestring==None:
+            self.config_dir = os.path.join('./THzCore/Exp',genTimeStamp(),'config')
+        else:
+            self.config_dir = os.path.join('./THzCore/Exp',timestring,'config')
         if not os.path.exists(self.config_dir):
             os.makedirs(self.config_dir)
 
     def genMultiConfig(self,config_idea='default',
                 normal_img_folder=None):
 
-        set_scale=0.5
+        set_scale=0.1
         if config_idea == 'human_depended':
             imgs_dict = {}
             for img_file in os.listdir(normal_img_folder):      

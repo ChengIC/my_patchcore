@@ -247,3 +247,31 @@ def PixelScore2Boxes(pxl_lvl_anom_score):
             detected_box_list[str(anomo_threshold)].append(detected_box)
 
     return detected_box_list
+
+
+def BoxesfromJson(jsonPath,output_path,annotation_dir=None):
+    
+    with open(jsonPath) as json_file:
+        data = json.load(json_file)
+        box_dict =  data['detected_box_list']
+        img = cv2.imread(data['img_path'])
+        gt_img = img.copy()
+        for threshold in box_dict:
+            bboxes = box_dict[threshold]
+            color = list(np.random.random(size=3) * 256)
+            for bbox in bboxes:
+                img = cv2.rectangle(img, (bbox[0],bbox[1]), (bbox[2],bbox[3]), color, 2)
+    
+    if annotation_dir!=None:
+        image_name = data['img_path'].split('/')[-1]
+        gt_boxList = readXML(annotation_dir, image_name)
+
+        for cls in gt_boxList:
+            bbox = gt_boxList[cls]
+            gt_img = cv2.rectangle(gt_img, (bbox[0],bbox[1]), (bbox[2],bbox[3]), (255,0,0), 2)
+    
+    vis = np.concatenate((gt_img, img), axis=1)
+
+    cv2.imwrite(output_path,vis)
+
+
