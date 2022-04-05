@@ -85,9 +85,57 @@ class genConfig():
         print ('Finish configs generation')
         return self.config_dir
 
-# if __name__ == "__main__":
-#     config = genConfig()
-#     config_dir = config.genMultiConfig(config_idea='human_depended',normal_img_folder='./datasets/full_body/train/good')
+    def bagging_config(self,num_sets=30,normal_img_folder=None,
+                        bootstrap=True,set_scale=0.5):
+
+        file_list = os.listdir(normal_img_folder)
+        size_of_subset = int(len(file_list)/num_sets)
+        if normal_img_folder:
+            if bootstrap:
+                for idx in range(num_sets):
+                    img_ids = random.sample(file_list,size_of_subset)
+                    config_data = {
+                        'img_ids':img_ids,
+                        'config_id':'bootstrap_bacth_' + str(idx) + '_' + unique_id(8),
+                        'scale':set_scale,
+                    }
+                    config_data['info'] = "image scale: {}, config idea: {}, bacth idx: {} num_sets: {}".format(config_data['scale'],'bootstrap',idx,num_sets)
+
+                    # save config data
+                    json_file_name = config_data['config_id']+'.json'
+                    json_filePath = os.path.join(self.config_dir, json_file_name)
+                    json_string = json.dumps(config_data)
+                    with open(json_filePath, 'w') as outfile:
+                        outfile.write(json_string)
+
+            else:
+                # no bootstrap equlats to non disjoint sampling
+                random.shuffle(file_list)
+                for idx in range(0,len(file_list),size_of_subset):
+                    img_ids = file_list[idx:idx+size_of_subset]
+                    if len(img_ids)<size_of_subset:
+                        continue
+                    config_data = {
+                        'img_ids':img_ids,
+                        'config_id':'disjoint_bacth_' + str(int(idx/size_of_subset)) + '_' + unique_id(8),
+                        'scale':set_scale,
+                    }
+                    config_data['info'] = "image scale: {}, config idea: {}, bacth idx: {} num_sets: {}".format(config_data['scale'],'disjoint',int(idx/size_of_subset),num_sets)
+
+                    # save config data
+                    json_file_name = config_data['config_id']+'.json'
+                    json_filePath = os.path.join(self.config_dir, json_file_name)
+                    json_string = json.dumps(config_data)
+                    with open(json_filePath, 'w') as outfile:
+                        outfile.write(json_string)
+        else:
+            raise 'No image folder for training'
+
+
+            
+if __name__ == "__main__":
+    config = genConfig()
+    config_dir = config.bagging_config(normal_img_folder='./datasets/full_body/train/good',bootstrap=True)
 
 
 
