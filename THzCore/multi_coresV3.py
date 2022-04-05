@@ -175,7 +175,8 @@ if __name__ == "__main__":
 	print (time_string)
 	# gen config
 	# config_dir = genConfig().genMultiConfig(config_idea='human_depended',normal_img_folder='./datasets/full_body/train/good')
-	config_dir = genConfig(time_string).genMultiConfig(config_idea='shuffle_batch',normal_img_folder='./datasets/full_body/train/good')
+	# config_dir = genConfig(time_string).genMultiConfig(config_idea='shuffle_batch',normal_img_folder='./datasets/full_body/train/good')
+	config_dir = genConfig(time_string).bagging_config(normal_img_folder='./datasets/full_body/train/good',bootstrap=True)
 	# # training
 	mycore = MultiCores(mode='train',training_img_folder='./datasets/full_body/train/good',timestring=time_string)
 	mycore.train_multicores(config_dir)

@@ -131,11 +131,11 @@ class genConfig():
         else:
             raise 'No image folder for training'
 
-
+        return self.config_dir
             
-if __name__ == "__main__":
-    config = genConfig()
-    config_dir = config.bagging_config(normal_img_folder='./datasets/full_body/train/good',bootstrap=True)
+# if __name__ == "__main__":
+#     config = genConfig()
+#     config_dir = config.bagging_config(normal_img_folder='./datasets/full_body/train/good',bootstrap=True)
 
 
 
