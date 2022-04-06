@@ -8,6 +8,7 @@ warnings.filterwarnings("ignore")
 import json
 from config_utils import *
 import datetime
+from voting_utils import Voting
 
 class MultiCores():
 	def __init__(self,
@@ -97,7 +98,9 @@ class MultiCores():
 			os.makedirs(self.run_dir)
 		
 		# inference image with pathcore one by one
-		exp_info = {}
+		img_results = []
+
+		# get inference result from each model
 		for single_model in self.models_dict:
 			roots = self.models_dict[single_model]['roots']
 			model = self.models_dict[single_model]['model']
@@ -115,21 +118,38 @@ class MultiCores():
 			HeatMap_Size = [original_size_height, original_size_width]
 			_, pxl_lvl_anom_score = model.inference (test_img_tensor, model_paras, HeatMap_Size)
 			detected_box_list = PixelScore2Boxes(pxl_lvl_anom_score)
+			
+			# log exp
+			img_id = img_path.split('/')[-1].split('.')[0]
+			s = roots.split('/')[-1]
+			json_file_name = img_id + '_config_' + s + '.json'
+			json_filePath = os.path.join(self.run_dir, json_file_name)
+			
 			exp_info ={
 				'img_path':img_path,
 				'detected_box_list':detected_box_list,
 				'resize_box':resize_box,
 				'roots_dir':roots,
+				'img_id':img_id,
+				'json_id':s
 			}
-			img_id = img_path.split('/')[-1].split('.')[0]
-			s = roots.split('/')[-1]
-			json_file_name = img_id + '_config_' + s + '.json'
-			json_filePath = os.path.join(self.run_dir, json_file_name)
-			print (json_filePath)
+
 			json_string = json.dumps(exp_info)
 			with open(json_filePath, 'w') as outfile:
 				outfile.write(json_string)
 
+			img_results.append(exp_info)
+		
+		# dump overall results
+		my_vote = Voting(voting_method='inference')
+		overall_results = my_vote.getVotes(img_results=img_results)
+		img_id = img_path.split('/')[-1].split('.')[0]
+		json_file_name = 'overall_' + img_id  + '.json'
+		json_filePath = os.path.join(self.run_dir, json_file_name)
+		json_string = json.dumps(overall_results)
+		with open(json_filePath, 'w') as outfile:
+			outfile.write(json_string)
+	
 	def inference_dir(self,img_dir=None):
 		if img_dir == None:
 			raise 'No valid img dir'
