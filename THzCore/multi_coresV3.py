@@ -139,7 +139,6 @@ class MultiCores():
 				outfile.write(json_string)
 
 			img_results.append(exp_info)
-		
 		# dump overall results
 		my_vote = Voting(voting_method='inference')
 		overall_results = my_vote.getVotes(img_results=img_results)
@@ -190,18 +189,19 @@ class MultiCores():
 	
 
 if __name__ == "__main__":
-	normal_folder =  './datasets/full_body/train/good'
-	time_string = genTimeStamp()
-	print (time_string)
-	# gen config
-	# config_dir = genConfig().genMultiConfig(config_idea='human_depended',normal_img_folder='./datasets/full_body/train/good')
-	# config_dir = genConfig(time_string).genMultiConfig(config_idea='shuffle_batch',normal_img_folder='./datasets/full_body/train/good')
-	config_dir = genConfig(time_string).bagging_config(normal_img_folder='./datasets/full_body/train/good',bootstrap=True)
-	# # training
-	mycore = MultiCores(mode='train',training_img_folder='./datasets/full_body/train/good',timestring=time_string)
-	mycore.train_multicores(config_dir)
+	# normal_folder =  './datasets/full_body/train/good'
+	# time_string = genTimeStamp()
+	# print (time_string)
+	# # gen config
+	# # config_dir = genConfig().genMultiConfig(config_idea='human_depended',normal_img_folder='./datasets/full_body/train/good')
+	# # config_dir = genConfig(time_string).genMultiConfig(config_idea='shuffle_batch',normal_img_folder='./datasets/full_body/train/good')
+	# config_dir = genConfig(time_string).bagging_config(num_sets=3,set_scale=0.1,normal_img_folder='./datasets/full_body/train/good',bootstrap=True)
+	# # # training
+	# mycore = MultiCores(mode='train',training_img_folder='./datasets/full_body/train/good',timestring=time_string)
+	# mycore.train_multicores(config_dir)
 
 	# inference
+	time_string = '2022_04_06_13_16_27'
 	mycore = MultiCores(mode='inference',multicore_dir='./THzCore/Exp/' + time_string + '/models', timestring=time_string)
 	mycore.inference_dir(img_dir='./datasets/full_body/test/objs')
 

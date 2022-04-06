@@ -62,6 +62,24 @@ def nms(bounding_boxes, confidence_score, threshold):
     return picked_boxes, picked_score
 
 
+def computeScore(bbox_arrs,hard_threshold=0.5):
+    i = 0
+    while i < len(bbox_arrs):
+        j = i+1
+        while j < len(bbox_arrs):
+            if bbox_arrs[i]['json_id']!=bbox_arrs[j]['json_id'] and bbox_arrs[i]['p'] == bbox_arrs[j]['p']:
+                bb1 = bbox_arrs[i]['bbox']
+                bb2 = bbox_arrs[j]['bbox']
+                IoU_Score = IoU(bb1,bb2)
+                if IoU_Score>=hard_threshold:
+                    bbox_arrs[i]['score']+=IoU_Score
+                    bbox_arrs[j]['score']+=IoU_Score
+            else:
+                pass
+            j+=1
+        i=i+1
+    return bbox_arrs
+
 class Voting():
 
     def __init__(self,voting_method='files'):
@@ -109,34 +127,25 @@ class Voting():
                         })
 
         # compute scores
-        i = 0
-        while i < len(bbox_arrs):
-            j = i+1
-            while j < len(bbox_arrs):
-                if bbox_arrs[i]['json_id']!=bbox_arrs[j]['json_id'] and bbox_arrs[i]['p'] == bbox_arrs[j]['p']:
-                    bb1 = bbox_arrs[i]['bbox']
-                    bb2 = bbox_arrs[j]['bbox']
-                    IoU_Score = IoU(bb1,bb2)
-                    if IoU_Score>=0.5:
-                        bbox_arrs[i]['score']+=IoU_Score
-                        bbox_arrs[j]['score']+=IoU_Score
-                else:
-                    pass
-                j+=1
-            i=i+1
-
-        # sort list and filter list
-        newlist = sorted(bbox_arrs, key=itemgetter('score'),reverse=True)
-
+        hard_threshold=0.5
         filter_list = []
-        filter_score=0.8
-        while len(filter_list)==0:
-            filter_list = [d for d in newlist if float(d['p'])==filter_score]
-            filter_score-=0.05
-        chosen_score=filter_score+0.05
-        filter_list = [d for d in filter_list if float(d['score'])!=0]
-        # print (filter_list)
+        while hard_threshold>=0.1 and len(filter_list)==0 :
+            bbox_arrs = computeScore(bbox_arrs,hard_threshold)
+
+            # sort list and filter list
+            newlist = sorted(bbox_arrs, key=itemgetter('score'),reverse=True)
+            
+            filter_score=0.8
+            while filter_score>0.5:
+                filter_list = [d for d in newlist if float(d['p'])==filter_score]
+                filter_list = [d for d in filter_list if float(d['score'])!=0]
+                if len(filter_list)>0:
+                    break
+                filter_score-=0.05
+            hard_threshold-=0.05
+            
         
+        print (hard_threshold,filter_score)
         # add nms on box lists
         max_score = filter_list[0]['score']
         bounding_boxes = [bb['bbox'] for bb in filter_list]
@@ -152,7 +161,8 @@ class Voting():
        
         overall_results = {
             'img_id':bbox_arrs[0]['im_id'],
-            'filter_score':chosen_score,
+            'filter_score':filter_score,
+            'hard_threshold':hard_threshold,
             'picked_boxes':picked_boxes,
             'picked_score':picked_score,
             'box_results':box_results,
