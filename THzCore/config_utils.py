@@ -85,7 +85,7 @@ class genConfig():
         print ('Finish configs generation')
         return self.config_dir
 
-    def bagging_config(self,num_sets=30,normal_img_folder=None,
+    def bagging_config(self,num_sets=10,normal_img_folder=None,
                         bootstrap=True,set_scale=0.5):
 
         file_list = os.listdir(normal_img_folder)
