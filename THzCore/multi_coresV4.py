@@ -8,8 +8,9 @@ warnings.filterwarnings("ignore")
 import json
 from config_utils import *
 from voting_utils import Voting
-from numba import jit 
-
+from joblib import Parallel,delayed
+from inference_utils import *
+import datetime
 
 class MultiCores():
 	def __init__(self,
@@ -100,48 +101,19 @@ class MultiCores():
 			os.makedirs(self.run_dir)
 		
 		# inference image with pathcore one by one
-		img_results = []
+		# img_results = []
 
-		# get inference result from each model
+		# # get inference result from each model
 		
-		for single_model in self.models_dict:
-			roots = self.models_dict[single_model]['roots']
-			model = self.models_dict[single_model]['model']
-			model_paras = self.models_dict[single_model]['model_paras']
-			resize_box = self.models_dict[single_model]['resize_box']
-			
-			# load image tensor
-			loader = loader_from_resize(resize_box)
-			image = Image.open(img_path).convert('RGB')
-			original_size_width, original_size_height = image.size
-			image = loader(image).unsqueeze(0)
-			test_img_tensor = image.to('cpu', torch.float)
+		# for single_model in self.models_dict:
+		# 	exp_info = inference_single_core(self.models_dict[single_model],img_path,self.run_dir)
+		# 	img_results.append(exp_info)
+		a = datetime.datetime.now()
+		img_results = Parallel(n_jobs=-1)(delayed(inference_single_core)(self.models_dict[single_model],img_path,self.run_dir) 
+											for single_model in self.models_dict)
+		b = datetime.datetime.now()
+		print (b-a)
 
-			# inference
-			HeatMap_Size = [original_size_height, original_size_width]
-			_, pxl_lvl_anom_score = model.inference (test_img_tensor, model_paras, HeatMap_Size)
-			detected_box_list = PixelScore2Boxes(pxl_lvl_anom_score)
-			
-			# log exp
-			img_id = img_path.split('/')[-1].split('.')[0]
-			s = roots.split('/')[-1]
-			json_file_name = img_id + '_config_' + s + '.json'
-			json_filePath = os.path.join(self.run_dir, json_file_name)
-			
-			exp_info ={
-				'img_path':img_path,
-				'detected_box_list':detected_box_list,
-				'resize_box':resize_box,
-				'roots_dir':roots,
-				'img_id':img_id,
-				'json_id':s
-			}
-
-			json_string = json.dumps(exp_info)
-			with open(json_filePath, 'w') as outfile:
-				outfile.write(json_string)
-
-			img_results.append(exp_info)
 		# dump overall results
 		my_vote = Voting(voting_method='inference')
 		overall_results = my_vote.getVotes(img_results=img_results)
@@ -203,9 +175,9 @@ if __name__ == "__main__":
 
 	# inference
 	time_string = '2022_04_11_21_20_17'
-	# mycore = MultiCores(mode='inference',multicore_dir='./THzCore/Exp/' + time_string + '/models', timestring=time_string)
-	# mycore.inference_dir(img_dir='./datasets/full_body/test/objs')
+	mycore = MultiCores(mode='inference',multicore_dir='./THzCore/Exp/' + time_string + '/models', timestring=time_string)
+	mycore.inference_dir(img_dir='./datasets/full_body/test/objs')
 
 	# # visualize
-	mycore = MultiCores(timestring=time_string)
-	mycore.evaluate_dir('./THzCore/Exp/' + time_string + '/runs', annotation_dir='./datasets/full_body/Annotations')
+	# mycore = MultiCores(timestring=time_string)
+	# mycore.evaluate_dir('./THzCore/Exp/' + time_string + '/runs', annotation_dir='./datasets/full_body/Annotations')
