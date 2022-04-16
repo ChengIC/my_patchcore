@@ -85,11 +85,12 @@ class genConfig():
         print ('Finish configs generation')
         return self.config_dir
 
-    def bagging_config(self,num_sets=10,normal_img_folder=None,
+    def bagging_config(self,num_sets=10,size_of_subset=None,normal_img_folder=None,
                         bootstrap=True,set_scale=0.5):
 
         file_list = os.listdir(normal_img_folder)
-        size_of_subset = int(len(file_list)/num_sets)
+        if size_of_subset==None:
+            size_of_subset = int(len(file_list)/num_sets)
         if normal_img_folder:
             if bootstrap:
                 for idx in range(num_sets):
