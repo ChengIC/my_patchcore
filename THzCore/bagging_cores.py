@@ -48,17 +48,21 @@ def inferenceModel(mycore,img_dir):
 if __name__ == "__main__":
 
     saved_models_dir, time_string = train_multicores(normal_img_folder='./datasets/full_body/train/good',
-                                    img_scale=0.5, 
-                                    percentage_per_bag=0.3, 
-                                    bagging_num=20, 
+                                    img_scale=1.0, 
+                                    percentage_per_bag=0.05, 
+                                    bagging_num=10, 
                                     time_string=None)
 
     all_models_dir = getSingleModelDir(saved_models_dir)
 
     img_dir='./datasets/full_body/test/objs/'
-    all_core_models = []
-    for model_dir in all_models_dir:
-        all_core_models.append(single_core(mode='inference',model_dir=model_dir,timestring=time_string))
+    i = 0
+    while i + 2 < len(all_models_dir):
+        batch_core_models = []
+        for model_dir in all_models_dir[i:i+2]:
+            batch_core_models.append(single_core(mode='inference',model_dir=model_dir,timestring=time_string))
 
-    Parallel(n_jobs=-1)(delayed(inferenceModel)(mycore,img_dir) 
-											for mycore in all_core_models)
+        Parallel(n_jobs=-1)(delayed(inferenceModel)(mycore,img_dir) 
+                                                    for mycore in batch_core_models)
+        i = i + 2
+            
