@@ -62,6 +62,7 @@ class genDS():
         IMAGENET_STD = tensor([.229, .224, .225])
         if resize_box==None:
             if scale==1:
+                self.resize_box=Process_Train_Folder.mean_size_folder(training_folder)
                 transfoms_paras = [
                         transforms.ToTensor(),
                         transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD),

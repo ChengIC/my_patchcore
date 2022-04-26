@@ -30,8 +30,10 @@ class single_core():
 
 	def train(self,train_imgs_folder,
 				config_path=None,
-				default_percentgae=0.1,default_scale=0.5):
-
+				default_percentage=0.1,default_scale=0.5):
+					
+		self.default_percentgae = default_percentage
+		self.default_scale = default_scale
 		if config_path!= None:
 			# load config
 			with open(config_path) as json_file:
@@ -53,10 +55,10 @@ class single_core():
 			DS = genDS(training_folder=train_imgs_folder,
 						scale=default_scale,
 						resize_box=None)
-			train_ds, _, ds_info = DS.genTrainDS(default_percentgae)
+			train_ds, _, ds_info = DS.genTrainDS(default_percentage)
 			
 			# create saved model_dir 
-			self.model_dir = os.path.join(self.exp_dir,'models','percentage{}_scale{}'.format(default_percentgae,default_scale))
+			self.model_dir = os.path.join(self.exp_dir,'models','percentage{}_scale{}'.format(default_percentage,default_scale))
 			if not os.path.exists(self.model_dir):
 				os.makedirs(self.model_dir)
 
@@ -83,7 +85,7 @@ class single_core():
 
 	def inference(self,img_path):
 		# create exp dir
-		self.run_dir = os.path.join(self.exp_dir,'runs')
+		self.run_dir = os.path.join(self.exp_dir, 'runs', self.model_dir.split('/')[-1])
 		if not os.path.exists(self.run_dir):
 			os.makedirs(self.run_dir)
 		
@@ -138,7 +140,7 @@ if __name__ == "__main__":
 
 	#### training
 	mycore = single_core(mode='train',timestring=time_string)
-	saved_model_dir = mycore.train(normal_folder,default_percentgae=0.8, default_scale=0.5) # test scale = 0.1
+	saved_model_dir = mycore.train(normal_folder,default_percentage=0.2, default_scale=0.5) # test scale = 0.1
 
 	#### inference
 	mycore = single_core(mode='inference',model_dir=saved_model_dir,timestring=time_string)
