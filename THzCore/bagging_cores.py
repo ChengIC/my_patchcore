@@ -5,7 +5,7 @@ from single_core import single_core
 import os
 from config_utils import * 
 from joblib import Parallel, delayed
-
+from hard_imgs import hard_imgs_ids
 
 def train_multicores(normal_img_folder,
                     img_scale=0.5, 
@@ -45,6 +45,9 @@ def inferenceOneModel(mycore,img_path):
 def inferenceModel(mycore,img_dir):
     mycore.inference_dir(img_dir)
 
+def inferenceModel_specific(mycore,id_list,img_dir):
+    mycore.inferece_some_ims(id_list,img_dir)
+
 if __name__ == "__main__":
 
     saved_models_dir, time_string = train_multicores(normal_img_folder='./datasets/full_body/train/good',
@@ -62,7 +65,12 @@ if __name__ == "__main__":
         for model_dir in all_models_dir[i:i+2]:
             batch_core_models.append(single_core(mode='inference',model_dir=model_dir,timestring=time_string))
 
-        Parallel(n_jobs=-1)(delayed(inferenceModel)(mycore,img_dir) 
+        # Parallel(n_jobs=-1)(delayed(inferenceModel)(mycore,img_dir) 
+        #                                             for mycore in batch_core_models)
+
+
+        id_list = hard_imgs_ids
+        Parallel(n_jobs=-1)(delayed(inferenceModel_specific)(mycore,id_list,img_dir) 
                                                     for mycore in batch_core_models)
         i = i + 2
             

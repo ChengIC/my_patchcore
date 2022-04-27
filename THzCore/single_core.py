@@ -132,6 +132,14 @@ class single_core():
 		for img_name in tqdm(os.listdir(img_dir)):
 			img_path = os.path.join(img_dir,img_name)
 			self.inference(img_path)
+	
+	def inferece_some_ims(self,id_list,img_dir=None):
+		if img_dir == None:
+			raise 'No valid img dir'
+
+		for img_name in tqdm(id_list):
+			img_path = os.path.join(img_dir,img_name+'.jpg')
+			self.inference(img_path)
 
 if __name__ == "__main__":
 	normal_folder =  './datasets/full_body/train/good'
