@@ -60,7 +60,7 @@ if __name__ == "__main__":
 
     img_dir='./datasets/full_body/test/objs/'
 
-    for model_dir in all_models_dir():
+    for model_dir in all_models_dir:
         my_core = single_core(mode='inference',model_dir=model_dir,timestring=time_string)
         inferenceModel(my_core,img_dir)
 
