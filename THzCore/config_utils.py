@@ -142,7 +142,8 @@ class genConfig():
         file_list = os.listdir(normal_img_folder)
         imgs_this_bag = max_imgs_per_bag
         for s in scale_list:
-            imgs_this_bag = int(imgs_this_bag/2)+1
+            imgs_this_bag = int(imgs_this_bag/2)+10
+            print (imgs_this_bag)
             for idx in range(bags_num):
                 img_ids = random.sample(file_list,imgs_this_bag)
                 config_data = {
@@ -160,10 +161,15 @@ class genConfig():
                     outfile.write(json_string)
         
         return self.config_dir
+        
 # if __name__ == "__main__":
 #     config = genConfig()
-#     config_dir = config.bagging_config(normal_img_folder='./datasets/full_body/train/good',bootstrap=True)
-
+# #   config_dir = config.bagging_config(normal_img_folder='./datasets/full_body/train/good',bootstrap=True)
+#     config_dir = genConfig().multiscale_config(
+#                         bags_num=20,
+#                         max_imgs_per_bag=400,
+#                         scale_list = [0.5,0.6,0.7,0.8,0.9,1.0],
+#                         normal_img_folder='./datasets/full_body/train/good')
 
 
     
