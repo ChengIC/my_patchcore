@@ -142,8 +142,8 @@ class genConfig():
         file_list = os.listdir(normal_img_folder)
         imgs_this_bag = max_imgs_per_bag
         for s in scale_list:
+            imgs_this_bag = int(imgs_this_bag/2)+1
             for idx in range(bags_num):
-                imgs_this_bag = int(imgs_this_bag/2)+1
                 img_ids = random.sample(file_list,imgs_this_bag)
                 config_data = {
                     'img_ids':img_ids,

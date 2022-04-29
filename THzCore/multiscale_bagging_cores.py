@@ -15,8 +15,8 @@ def train_multiScaleCores(normal_img_folder,
         time_string = genTimeStamp()
 
     config_dir = genConfig(time_string).multiscale_config(
-                        bags_num=20,
-                        max_imgs_per_bag=100,
+                        bags_num=bags_num,
+                        max_imgs_per_bag=max_imgs_per_bag,
                         scale_list = [0.5,0.6,0.7,0.8,0.9,1.0],
                         normal_img_folder=normal_img_folder)
     
