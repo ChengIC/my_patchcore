@@ -51,8 +51,8 @@ def inferenceModel_specific(mycore,id_list,img_dir):
 if __name__ == "__main__":
 
     saved_models_dir, time_string = train_multiScaleCores(normal_img_folder='./datasets/full_body/train/good',
-                                                            bags_num=400,
-                                                            max_imgs_per_bag=20,
+                                                            bags_num=20,
+                                                            max_imgs_per_bag=400,
                                                             time_string=None)
 
     all_models_dir = getSingleModelDir(saved_models_dir)
