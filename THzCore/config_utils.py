@@ -162,6 +162,35 @@ class genConfig():
         
         return self.config_dir
 
+
+    def fix_imgs_multiscale(self,
+                            max_imgs_per_bag=100,
+                            normal_img_folder=None):
+        file_list = os.listdir(normal_img_folder)
+        imgs_this_bag = max_imgs_per_bag
+        img_ids = random.sample(file_list,imgs_this_bag)
+        scale_list = [i/100 for i in range(50,105,5)]
+        for s in scale_list:
+            config_data = {
+                    'img_ids':img_ids,
+                    'config_id':'bootstrap_bacth_scale_' + str(s) + '_' + unique_id(8),
+                    'scale':s,
+                }
+            config_data['info'] = "image scale: {}, config idea: {}, imgs num: {}".format(config_data['scale'],'multi_scale_bootstrap',imgs_this_bag)
+
+            # save config data
+            json_file_name = config_data['config_id']+'.json'
+            json_filePath = os.path.join(self.config_dir, json_file_name)
+            json_string = json.dumps(config_data)
+            with open(json_filePath, 'w') as outfile:
+                outfile.write(json_string)
+
+        return self.config_dir
+
+
+
+
+
 # if __name__ == "__main__":
 #     config = genConfig()
 # #   config_dir = config.bagging_config(normal_img_folder='./datasets/full_body/train/good',bootstrap=True)

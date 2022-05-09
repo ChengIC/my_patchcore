@@ -1,10 +1,10 @@
 
 
-from unicodedata import name
+# from unicodedata import name
 from single_core import single_core
 import os
 from config_utils import * 
-from joblib import Parallel, delayed
+# from joblib import Parallel, delayed
 from hard_imgs import hard_imgs_ids
 
 def train_multiScaleCores(normal_img_folder,
@@ -14,12 +14,15 @@ def train_multiScaleCores(normal_img_folder,
     if time_string==None:
         time_string = genTimeStamp()
 
-    config_dir = genConfig(time_string).multiscale_config(
-                        bags_num=bags_num,
-                        max_imgs_per_bag=max_imgs_per_bag,
-                        scale_list = [0.5,0.6,0.7,0.8,0.9,1.0],
-                        normal_img_folder=normal_img_folder)
+    # config_dir = genConfig(time_string).multiscale_config(
+    #                     bags_num=bags_num,
+    #                     max_imgs_per_bag=max_imgs_per_bag,
+    #                     scale_list = [0.5,0.6,0.7,0.8,0.9,1.0],
+    #                     normal_img_folder=normal_img_folder)
     
+    config_dir = genConfig(time_string).fix_imgs_multiscale(
+                            max_imgs_per_bag=max_imgs_per_bag,
+                            normal_img_folder=normal_img_folder)
 
     for config_file in os.listdir(config_dir):
         config_filePath = os.path.join(config_dir,config_file)
@@ -52,7 +55,7 @@ if __name__ == "__main__":
 
     saved_models_dir, time_string = train_multiScaleCores(normal_img_folder='./datasets/full_body/train/good',
                                                             bags_num=20,
-                                                            max_imgs_per_bag=400,
+                                                            max_imgs_per_bag=10,
                                                             time_string=None)
 
     all_models_dir = getSingleModelDir(saved_models_dir)
