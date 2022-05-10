@@ -3,30 +3,20 @@
 # from unicodedata import name
 from single_core import single_core
 import os
-from myutils.config_utils import * 
+from rc_utils.config_utils import * 
 # from joblib import Parallel, delayed
 # from hard_imgs import hard_imgs_ids
 
-def train_multiScaleCores(normal_img_folder,
-                    bags_num=20,
-                    max_imgs_per_bag=100,
-                    time_string=None):
-    if time_string==None:
-        time_string = genTimeStamp()
+def train_multiCores(config_dir,
+                    normal_img_folder,
+                    timestring=None):
 
-    # config_dir = genConfig(time_string).multiscale_config(
-    #                     bags_num=bags_num,
-    #                     max_imgs_per_bag=max_imgs_per_bag,
-    #                     scale_list = [0.5,0.6,0.7,0.8,0.9,1.0],
-    #                     normal_img_folder=normal_img_folder)
-    
-    config_dir = genConfig(time_string).fix_imgs_multiscale(
-                            max_imgs_per_bag=max_imgs_per_bag,
-                            normal_img_folder=normal_img_folder)
+    if timestring==None:
+        timestring = genTimeStamp()
 
     for config_file in os.listdir(config_dir):
         config_filePath = os.path.join(config_dir,config_file)
-        mycore = single_core(mode='train',timestring=time_string)
+        mycore = single_core(mode='train',timestring=timestring)
         saved_model_dir = mycore.train(normal_img_folder,config_path=config_filePath)
 
     saved_models_dir = '/'.join(saved_model_dir.split('/')[:-1])
@@ -52,11 +42,15 @@ def inferenceModel_specific(mycore,id_list,img_dir):
     mycore.inferece_some_ims(id_list,img_dir)
 
 if __name__ == "__main__":
+    timestring = genTimeStamp()
+    # generate configuration files
+    normal_imgs_folder = './datasets/full_body/train/good'
+    config_dir = genConfig(normal_imgs_folder = normal_imgs_folder, timestring = timestring).genMultiConfigs(num_batch=20,imgs_per_bag=50)
 
-    saved_models_dir, time_string = train_multiScaleCores(normal_img_folder='./datasets/full_body/train/good',
-                                                            bags_num=20,
-                                                            max_imgs_per_bag=10,
-                                                            time_string=None)
+    # begin training
+    saved_models_dir, time_string = train_multiCores(config_dir=config_dir,
+                                                    normal_img_folder='./datasets/full_body/train/good',
+                                                    timestring=timestring)
 
     all_models_dir = getSingleModelDir(saved_models_dir)
 

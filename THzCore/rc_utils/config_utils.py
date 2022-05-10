@@ -77,7 +77,7 @@ class genConfig():
             selected_img_num = imgs_per_bag
 
         file_list = os.listdir(self.normal_imgs_folder)
-        scale_list = [i/100 for i in range(50,100,scale_step_size)] # scale setting: 0.5, 0.55, 0.6, 0.65 ... 1.0
+        scale_list = [i/100 for i in range(50,160,scale_step_size)] # scale setting: 0.5, 0.55, 0.6, 0.65 ... 1.0
 
         if 1 not in scale_list:
             scale_list.append(1)
@@ -96,13 +96,12 @@ class genConfig():
                     }
                     self.genSingleConfig(paras)
 
-
         return self.config_dir
 
 
 if __name__ == "__main__":
     normal_imgs_folder = './datasets/full_body/train/good'
-    config_dir = genConfig(normal_imgs_folder = normal_imgs_folder).genMultiConfigs(num_batch=10,imgs_per_bag=100)
+    config_dir = genConfig(normal_imgs_folder = normal_imgs_folder).genMultiConfigs(num_batch=20,imgs_per_bag=50)
 
 
 

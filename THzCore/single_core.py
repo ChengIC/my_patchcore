@@ -1,6 +1,6 @@
 
-from myutils.cores_utils import *
-from myutils.train_utils import *
+from rc_utils.cores_utils import *
+from rc_utils.train_utils import *
 from models import PatchCore
 import warnings # for some torch warnings regarding depreciation
 warnings.filterwarnings("ignore")
