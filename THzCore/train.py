@@ -1,5 +1,5 @@
 from models import PatchCore
-from train_utils import genDS
+from myutils.train_utils import genDS
 import torch
 import os
 import warnings # for some torch warnings regarding depreciation

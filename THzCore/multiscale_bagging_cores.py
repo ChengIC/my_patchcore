@@ -3,9 +3,9 @@
 # from unicodedata import name
 from single_core import single_core
 import os
-from config_utils import * 
+from myutils.config_utils import * 
 # from joblib import Parallel, delayed
-from hard_imgs import hard_imgs_ids
+# from hard_imgs import hard_imgs_ids
 
 def train_multiScaleCores(normal_img_folder,
                     bags_num=20,

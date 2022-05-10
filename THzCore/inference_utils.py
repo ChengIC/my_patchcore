@@ -1,6 +1,6 @@
 
 # model_dict = models_dict[single_model]
-from cores_utils import *
+from myutils.cores_utils import *
 import warnings # for some torch warnings regarding depreciation
 warnings.filterwarnings("ignore")
 
