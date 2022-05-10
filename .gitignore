@@ -99,6 +99,7 @@ celerybeat.pid
 
 # SageMath parsed files
 *.sage.py
+*.DS_store
 
 # Environments
 .env
@@ -134,3 +135,12 @@ dmypy.json
 /processed_results
 /model_test
 /results_example
+/exp_notebook
+/model_zoos_regional
+/THzCore/CoreModels/
+/THzCore/MultiCoreModels/
+/THzCore/runs/
+/THzCore/vis/
+/THzCore/Config/
+/THzCore/Exp/
+/indad
