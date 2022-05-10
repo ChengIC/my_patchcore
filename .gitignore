@@ -136,14 +136,5 @@ dmypy.json
 /model_test
 /results_example
 /exp_notebook
-/model_zoos_regional
-/THzCore/CoreModels/
-/THzCore/MultiCoreModels/
-/THzCore/runs/
-/THzCore/vis/
-/THzCore/Config/
 /THzCore/Exp/
 /indad
-/data_prep
-/docs
-/data_prep
