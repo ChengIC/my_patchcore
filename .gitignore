@@ -144,3 +144,5 @@ dmypy.json
 /THzCore/Config/
 /THzCore/Exp/
 /indad
+/data_prep
+/docs
