@@ -54,7 +54,7 @@ class single_core():
 			# generate training dataset
 			DS = genDS(training_folder=train_imgs_folder,
 						scale=default_scale,
-						resize_box=None)
+						resize_box=[100,100])
 			train_ds, _, ds_info = DS.genTrainDS(default_percentage)
 			
 			# create saved model_dir 
@@ -142,14 +142,14 @@ class single_core():
 			self.inference(img_path)
 
 if __name__ == "__main__":
-	normal_folder =  './datasets/full_body/train/good'
+	normal_folder =  './exp_notebook/save_085_recall_img'
 	time_string = genTimeStamp()
 	print ('Start experiment at {}'.format(time_string))
 
 	#### training
 	mycore = single_core(mode='train',timestring=time_string)
-	saved_model_dir = mycore.train(normal_folder,default_percentage=0.2, default_scale=0.5) # test scale = 0.1
+	saved_model_dir = mycore.train(normal_folder,default_percentage=0.5) 
 
-	#### inference
-	mycore = single_core(mode='inference',model_dir=saved_model_dir,timestring=time_string)
-	mycore.inference_dir(img_dir='./datasets/full_body/test/objs')
+	# #### inference
+	# mycore = single_core(mode='inference',model_dir=saved_model_dir,timestring=time_string)
+	# mycore.inference_dir(img_dir='./datasets/full_body/test/objs')
