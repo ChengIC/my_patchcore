@@ -43,21 +43,24 @@ def inferenceModel_specific(mycore,id_list,img_dir):
 
 if __name__ == "__main__":
     timestring = genTimeStamp()
-    # generate configuration files
-    normal_imgs_folder = './datasets/full_body/train/good'
-    config_dir = genConfig(normal_imgs_folder = normal_imgs_folder, timestring = timestring).genMultiConfigs(num_batch=20,imgs_per_bag=50)
+    # # generate configuration files
+    # normal_imgs_folder = './datasets/full_body/train/good'
+    # config_dir = genConfig(normal_imgs_folder = normal_imgs_folder, timestring = timestring).genMultiConfigs(num_batch=20,imgs_per_bag=50)
 
-    # begin training
-    saved_models_dir, time_string = train_multiCores(config_dir=config_dir,
-                                                    normal_img_folder='./datasets/full_body/train/good',
-                                                    timestring=timestring)
+    # # begin training
+    # saved_models_dir, time_string = train_multiCores(config_dir=config_dir,
+    #                                                 normal_img_folder='./datasets/full_body/train/good',
+    #                                                 timestring=timestring)
+    
+    saved_models_dir = ''
 
     all_models_dir = getSingleModelDir(saved_models_dir)
 
-    img_dir='./datasets/full_body/test/objs/'
-
-    for model_dir in all_models_dir:
-        my_core = single_core(mode='inference',model_dir=model_dir,timestring=time_string)
+    img_dir='./datasets/full_body/test/objs/' # use normal images get candidated boxes for training 2nd patchcore behind
+    
+    selected_model_dirs = random.choices(all_models_dir, k=5)
+    for model_dir in selected_model_dirs:
+        my_core = single_core(mode='inference',model_dir=model_dir,timestring=timestring)
         inferenceModel(my_core,img_dir)
 
 
