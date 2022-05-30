@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
     all_models_dir = getSingleModelDir(saved_models_dir)
 
-    img_dir='./datasets/full_body/test/objs/' # use normal images get candidated boxes for training 2nd patchcore behind
+    img_dir='./datasets/full_body/train/good' # use normal images get candidated boxes for training 2nd patchcore behind
     
     selected_model_dirs = random.choices(all_models_dir, k=5)
     for model_dir in selected_model_dirs:
