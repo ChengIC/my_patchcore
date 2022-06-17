@@ -36,7 +36,7 @@ class genConfig():
         self.config_dir = os.path.join(self.config_parent_dir,self.timestring,'config')
         if not os.path.exists(self.config_dir):
             os.makedirs(self.config_dir)
-
+        
     def genSingleConfig(self, 
                         paras ={}):
 
