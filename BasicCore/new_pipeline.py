@@ -15,6 +15,7 @@ from torchvision import transforms
 import random
 import cv2
 from skimage.measure import label, regionprops
+import pandas as pd
 
 # Generate configure files
 IMAGENET_MEAN = tensor([.485, .456, .406])
@@ -295,18 +296,65 @@ class InferenceCore():
                         with open(json_filePath, 'w') as outfile:
                             outfile.write(json_string)
 
+class SummariseRuns():
+    def __init__(self, run_dir) :
+        self.run_dir = run_dir
+        self.summary_dir = os.path.join ('/'.join(self.run_dir.split('/')[:-1]), 'summary')
+        if not os.path.exists(self.summary_dir):
+            os.makedirs(self.summary_dir)
+    
+    def returnPD(self):
+        
+        # define csv columns 
+        runs_data = {
+            'config_id':[],
+            'ImageID':[],
+            'selected_threshold':[],
+            'XMin':[],
+            'XMax':[],
+            'YMin':[],
+            'YMax':[]
+        }
 
+        # load multiple json files
+        for file in tqdm(os.listdir(os.path.join(self.run_dir))):
+            if '.json' in file:
+                img_id = file.split('_config')[0]
+                config_id = file.split('config_')[1].split('.json')[0]
 
-# generate configure files
-gen_fig = GenConfigureFiles('/Users/rc/Documents/GitHub/my_patchcore/datasets/full_body/train/good', '/Users/rc/Documents/GitHub/my_patchcore/BasicCore/exp')
-config_dir = gen_fig.genMultiScaleFiles(method='person', scale_list=[0.1])
-print (config_dir)
+                with open(os.path.join(self.run_dir,file)) as run_file:
+                    run_data = json.load(run_file)
+                    detected_box_list = run_data['detected_box_list']
+                    for selected_th in detected_box_list:
+                        detected_box = detected_box_list[selected_th]
+                        for bb in detected_box:
+                            runs_data['config_id'].append(config_id)
+                            runs_data['ImageID'].append(img_id)
+                            runs_data['selected_threshold'].append(float(selected_th))
+                            runs_data['XMin'].append(bb[0])
+                            runs_data['XMax'].append(bb[2])
+                            runs_data['YMin'].append(bb[1])
+                            runs_data['YMax'].append(bb[3])
+                                
+        runs_data = pd.DataFrame(runs_data)
+        runs_data_path = os.path.join(self.summary_dir, 'runs' + genTimeStamp() + '.csv')
+        runs_data.to_csv(runs_data_path,index=False)
+        print('Summary file: ' + runs_data_path)
 
-# training 
-train_session = TrainPatchCore(config_dir)
-model_dir = train_session.trainModel()
-print (model_dir)
+# # generate configure files
+# gen_fig = GenConfigureFiles('/Users/rc/Documents/GitHub/my_patchcore/datasets/full_body/train/good', '/Users/rc/Documents/GitHub/my_patchcore/BasicCore/exp')
+# config_dir = gen_fig.genMultiScaleFiles(method='person', scale_list=[0.1])
+# print (config_dir)
 
-# inferencing
-img_dir = '/Users/rc/Documents/GitHub/my_patchcore/datasets/full_body/test/objs'
-InferenceCore(model_dir).inference_one_model(img_dir)
+# # training 
+# train_session = TrainPatchCore(config_dir)
+# model_dir = train_session.trainModel()
+# print (model_dir)
+
+# # inferencing
+# img_dir = '/Users/rc/Documents/GitHub/my_patchcore/datasets/full_body/test/objs'
+# InferenceCore(model_dir).inference_one_model(img_dir)
+
+# summary
+runs_dir = '/Users/rc/Documents/GitHub/my_patchcore/BasicCore/exp/2022_06_17_16_27_59/runs'
+SummariseRuns(runs_dir).returnPD()
