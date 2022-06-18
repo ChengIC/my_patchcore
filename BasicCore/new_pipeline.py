@@ -341,19 +341,19 @@ class SummariseRuns():
         runs_data.to_csv(runs_data_path,index=False)
         print('Summary file: ' + runs_data_path)
 
-# # generate configure files
-# gen_fig = GenConfigureFiles('/Users/rc/Documents/GitHub/my_patchcore/datasets/full_body/train/good', '/Users/rc/Documents/GitHub/my_patchcore/BasicCore/exp')
-# config_dir = gen_fig.genMultiScaleFiles(method='person', scale_list=[0.1])
-# print (config_dir)
+# generate configure files
+gen_fig = GenConfigureFiles('/Users/rc/Documents/GitHub/my_patchcore/datasets/full_body/train/good', '/Users/rc/Documents/GitHub/my_patchcore/BasicCore/exp')
+config_dir = gen_fig.genMultiScaleFiles(method='person', scale_list=[0.1])
+print (config_dir)
 
-# # training 
-# train_session = TrainPatchCore(config_dir)
-# model_dir = train_session.trainModel()
-# print (model_dir)
+# training 
+train_session = TrainPatchCore(config_dir)
+model_dir = train_session.trainModel()
+print (model_dir)
 
-# # inferencing
-# img_dir = '/Users/rc/Documents/GitHub/my_patchcore/datasets/full_body/test/objs'
-# InferenceCore(model_dir).inference_one_model(img_dir)
+# inferencing
+img_dir = '/Users/rc/Documents/GitHub/my_patchcore/datasets/full_body/test/objs'
+InferenceCore(model_dir).inference_one_model(img_dir)
 
 # summary
 runs_dir = '/Users/rc/Documents/GitHub/my_patchcore/BasicCore/exp/2022_06_17_16_27_59/runs'
