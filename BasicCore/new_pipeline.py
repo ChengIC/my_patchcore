@@ -154,7 +154,7 @@ class TrainPatchCore ():
         mean_img_size = mean_size_folder(config_data['img_folder'])
         resize_box = [int(mean_img_size[0]*config_data['scale']),
                     int(mean_img_size[1]*config_data['scale'])]
-                    
+
         if config_data['scale']!=1:
             transfoms_paras.append(transforms.Resize(resize_box, interpolation=transforms.InterpolationMode.BICUBIC))
 
@@ -345,8 +345,8 @@ class SummariseRuns():
         print('Summary file: ' + runs_data_path)
 
 # generate configure files
-gen_fig = GenConfigureFiles('/Users/rc/Documents/GitHub/my_patchcore/datasets/full_body/train/good', '/Users/rc/Documents/GitHub/my_patchcore/BasicCore/exp')
-config_dir = gen_fig.genMultiScaleFiles(method='person', scale_list=[0.1])
+gen_fig = GenConfigureFiles('./datasets/full_body/train/good', './BasicCore/exp')
+config_dir = gen_fig.genMultiScaleFiles(method='person')
 print (config_dir)
 
 # training 
@@ -355,7 +355,7 @@ model_dir = train_session.trainModel()
 print (model_dir)
 
 # inferencing
-img_dir = '/Users/rc/Documents/GitHub/my_patchcore/datasets/full_body/test/objs'
+img_dir = './datasets/full_body/test/objs'
 run_dir = InferenceCore(model_dir).inference_one_model(img_dir)
 print (run_dir)
 
