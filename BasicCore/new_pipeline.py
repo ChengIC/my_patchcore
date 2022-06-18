@@ -295,6 +295,7 @@ class InferenceCore():
                         json_string = json.dumps(exp_info)
                         with open(json_filePath, 'w') as outfile:
                             outfile.write(json_string)
+        return self.run_dir
 
 class SummariseRuns():
     def __init__(self, run_dir) :
@@ -353,8 +354,8 @@ print (model_dir)
 
 # inferencing
 img_dir = '/Users/rc/Documents/GitHub/my_patchcore/datasets/full_body/test/objs'
-InferenceCore(model_dir).inference_one_model(img_dir)
+run_dir = InferenceCore(model_dir).inference_one_model(img_dir)
+print (run_dir)
 
 # summary
-runs_dir = '/Users/rc/Documents/GitHub/my_patchcore/BasicCore/exp/2022_06_17_16_27_59/runs'
-SummariseRuns(runs_dir).returnPD()
+SummariseRuns(run_dir).returnPD()
