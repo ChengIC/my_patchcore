@@ -150,10 +150,12 @@ class TrainPatchCore ():
                             transforms.ToTensor(),
                             transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD),
                         ]
+        
+        mean_img_size = mean_size_folder(config_data['img_folder'])
+        resize_box = [int(mean_img_size[0]*config_data['scale']),
+                    int(mean_img_size[1]*config_data['scale'])]
+                    
         if config_data['scale']!=1:
-            mean_img_size = mean_size_folder(config_data['img_folder'])
-            resize_box = [int(mean_img_size[0]*config_data['scale']),
-                        int(mean_img_size[1]*config_data['scale'])]
             transfoms_paras.append(transforms.Resize(resize_box, interpolation=transforms.InterpolationMode.BICUBIC))
 
         loader = transforms.Compose(transfoms_paras)
