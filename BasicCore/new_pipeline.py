@@ -329,32 +329,26 @@ class InferenceCore():
                             img_path = os.path.join(img_dir, img_file)
                             test_img_tensor, HeatMap_Size = self.load_image_to_tensor_cpu(img_path, config_data)
                             _, pxl_lvl_anom_score = model.inference (test_img_tensor, model_paras, HeatMap_Size)
-                            try:
-                                detected_box_list = PixelScore2Boxes(pxl_lvl_anom_score)
+                            detected_box_list = PixelScore2Boxes(pxl_lvl_anom_score)
 
-                                # log exp
-                                img_id = img_file.split('/')[-1].split('.')[0]
-                                json_file_name = img_id + '_config_' + single_model_dir + '.json'
-                                json_filePath = os.path.join(self.run_dir, json_file_name)
-                                
-                                exp_info ={
-                                    'img_path':img_path,
-                                    'detected_box_list':detected_box_list,
-                                    'model_dir':single_model_dir,
-                                    'img_id':img_id,
-                                }
+                            # log exp
+                            img_id = img_file.split('/')[-1].split('.')[0]
+                            json_file_name = img_id + '_config_' + single_model_dir + '.json'
+                            json_filePath = os.path.join(self.run_dir, json_file_name)
+                            
+                            exp_info ={
+                                'img_path':img_path,
+                                'detected_box_list':detected_box_list,
+                                'model_dir':single_model_dir,
+                                'img_id':img_id,
+                            }
 
-                                json_string = json.dumps(exp_info)
-                                with open(json_filePath, 'w') as outfile:
-                                    outfile.write(json_string)
+                            json_string = json.dumps(exp_info)
+                            with open(json_filePath, 'w') as outfile:
+                                outfile.write(json_string)
 
-                            except:
-                                pass
-
-                        else:
-                            pass
                         
-            return self.run_dir
+        return self.run_dir
 
 class SummariseRuns():
     def __init__(self, run_dir) :
@@ -413,7 +407,8 @@ class SummariseRuns():
 
 # inferencing
 img_dir = './datasets/full_body/test/objs'
-run_dir = InferenceCore(model_dir).inference_one_model(img_dir)
+model_dir = './BasicCore/exp/2022_06_18_11_57_24/models'
+run_dir = InferenceCore(model_dir).continuous_inference(img_dir)
 print (run_dir)
 
 # summary
