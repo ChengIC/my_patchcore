@@ -41,14 +41,17 @@ def PixelScore2Boxes(pxl_lvl_anom_score):
     fmap_img = pred_to_img(pxl_lvl_anom_score, score_range)
     detected_box_list = {}
     for anomo_threshold in anomo_thresholds:
-        mask = fmap_img > anomo_threshold
-        label_mask = label(mask[:, :, 0])
-        props = regionprops(label_mask)
-        detected_box_list[str(anomo_threshold)] = []
-        for prop in props:
-            detected_box =  [int(prop.bbox[1]), int(prop.bbox[0]),
-                            int(prop.bbox[3]), int(prop.bbox[2])]  # 1 0 3 2
-            detected_box_list[str(anomo_threshold)].append(detected_box)
+        try:
+            mask = fmap_img > anomo_threshold
+            label_mask = label(mask[:, :, 0])
+            props = regionprops(label_mask)
+            detected_box_list[str(anomo_threshold)] = []
+            for prop in props:
+                detected_box =  [int(prop.bbox[1]), int(prop.bbox[0]),
+                                int(prop.bbox[3]), int(prop.bbox[2])]  # 1 0 3 2
+                detected_box_list[str(anomo_threshold)].append(detected_box)
+        except:
+            pass
 
     return detected_box_list
 
@@ -305,9 +308,11 @@ class InferenceCore():
     
     # continues inference
     def continuous_inference(self, img_dir):
-        inference_files_list = os.listdir(self.run_dir)
-        for single_model_dir in os.listdir(self.model_dir):
+        inference_files_list = os.listdir(self.run_dir).copy()
+
+        for single_model_dir in tqdm(os.listdir(self.model_dir)):
             model_path = os.path.join(self.model_dir, single_model_dir)
+
             if os.path.isdir(model_path):
                 model, model_paras, config_data = self.load_model_from_dir(model_path)
 
@@ -319,6 +324,7 @@ class InferenceCore():
                         print ('already inference')
 
                     else:
+                        print ('load model from {} to inference image {}'.format(model_path, img_file))
                         if img_file.split('.')[-1] in IMG_FORMATS:
                             img_path = os.path.join(img_dir, img_file)
                             test_img_tensor, HeatMap_Size = self.load_image_to_tensor_cpu(img_path, config_data)
