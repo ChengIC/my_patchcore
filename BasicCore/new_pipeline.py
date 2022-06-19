@@ -298,10 +298,56 @@ class InferenceCore():
                             json_string = json.dumps(exp_info)
                             with open(json_filePath, 'w') as outfile:
                                 outfile.write(json_string)
-                                
                         except:
                             pass
+
         return self.run_dir
+    
+    # continues inference
+    def continuous_inference(self, img_dir):
+        for single_model_dir in os.listdir(self.model_dir):
+            model_path = os.path.join(self.model_dir, single_model_dir)
+            if os.path.isdir(model_path):
+                model, model_paras, config_data = self.load_model_from_dir(model_path)
+
+                for img_file in tqdm(os.listdir(img_dir)):
+                    img_id = img_file.split('/')[-1].split('.')[0]
+                    json_file_name = img_id + '_config_' + single_model_dir + '.json'
+
+                    if json_file_name in os.listdir(self.run_dir):
+                        print ('already inference')
+
+                    else:
+                        if img_file.split('.')[-1] in IMG_FORMATS:
+                            img_path = os.path.join(img_dir, img_file)
+                            test_img_tensor, HeatMap_Size = self.load_image_to_tensor_cpu(img_path, config_data)
+                            _, pxl_lvl_anom_score = model.inference (test_img_tensor, model_paras, HeatMap_Size)
+                            try:
+                                detected_box_list = PixelScore2Boxes(pxl_lvl_anom_score)
+
+                                # log exp
+                                img_id = img_file.split('/')[-1].split('.')[0]
+                                json_file_name = img_id + '_config_' + single_model_dir + '.json'
+                                json_filePath = os.path.join(self.run_dir, json_file_name)
+                                
+                                exp_info ={
+                                    'img_path':img_path,
+                                    'detected_box_list':detected_box_list,
+                                    'model_dir':single_model_dir,
+                                    'img_id':img_id,
+                                }
+
+                                json_string = json.dumps(exp_info)
+                                with open(json_filePath, 'w') as outfile:
+                                    outfile.write(json_string)
+
+                            except:
+                                pass
+
+                        else:
+                            pass
+                        
+            return self.run_dir
 
 class SummariseRuns():
     def __init__(self, run_dir) :
@@ -348,15 +394,15 @@ class SummariseRuns():
         runs_data.to_csv(runs_data_path,index=False)
         print('Summary file: ' + runs_data_path)
 
-# generate configure files
-gen_fig = GenConfigureFiles('./datasets/full_body/train/good', './BasicCore/exp')
-config_dir = gen_fig.genMultiScaleFiles(method='person')
-print (config_dir)
+# # generate configure files
+# gen_fig = GenConfigureFiles('./datasets/full_body/train/good', './BasicCore/exp')
+# config_dir = gen_fig.genMultiScaleFiles(method='person')
+# print (config_dir)
 
-# training 
-train_session = TrainPatchCore(config_dir)
-model_dir = train_session.trainModel()
-print (model_dir)
+# # training 
+# train_session = TrainPatchCore(config_dir)
+# model_dir = train_session.trainModel()
+# print (model_dir)
 
 # inferencing
 img_dir = './datasets/full_body/test/objs'
