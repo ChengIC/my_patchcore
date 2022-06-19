@@ -305,6 +305,7 @@ class InferenceCore():
     
     # continues inference
     def continuous_inference(self, img_dir):
+        inference_files_list = os.listdir(self.run_dir)
         for single_model_dir in os.listdir(self.model_dir):
             model_path = os.path.join(self.model_dir, single_model_dir)
             if os.path.isdir(model_path):
@@ -314,7 +315,7 @@ class InferenceCore():
                     img_id = img_file.split('/')[-1].split('.')[0]
                     json_file_name = img_id + '_config_' + single_model_dir + '.json'
 
-                    if json_file_name in os.listdir(self.run_dir):
+                    if json_file_name in inference_files_list:
                         print ('already inference')
 
                     else:
