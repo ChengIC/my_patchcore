@@ -109,6 +109,13 @@ class GenConfigureFiles():
         
         return person_imgs
 
+    def randomGenbyNumbers(self, num_imgs = 30):
+        group_imgs = {}
+        for idx in range(10):
+            key = 'batch_'+ str(idx)
+            group_imgs[key] = random.choices(os.listdir(self.training_imgs_folder), k=num_imgs)
+        return group_imgs
+
     def genConfigFiles(self, scale=1, method='person'):
         # group_imgs = {
         #          key: [img_ids]    
@@ -117,7 +124,10 @@ class GenConfigureFiles():
         group_imgs ={}
         if method == 'person':
             group_imgs = self.genConfigByPersons()
-
+        
+        if method == 'random':
+            group_imgs = self.randomGenbyNumbers()
+            
         for k, v in group_imgs.items():
             config_data = {}
             config_data['filename'] = k + '_' + unique_id(8) + '.json'
@@ -283,26 +293,23 @@ class InferenceCore():
                         img_path = os.path.join(img_dir, img_file)
                         test_img_tensor, HeatMap_Size = self.load_image_to_tensor_cpu(img_path, config_data)
                         _, pxl_lvl_anom_score = model.inference (test_img_tensor, model_paras, HeatMap_Size)
-                        try:
-                            detected_box_list = PixelScore2Boxes(pxl_lvl_anom_score)
+                        detected_box_list = PixelScore2Boxes(pxl_lvl_anom_score)
 
-                            # log exp
-                            img_id = img_file.split('/')[-1].split('.')[0]
-                            json_file_name = img_id + '_config_' + single_model_dir + '.json'
-                            json_filePath = os.path.join(self.run_dir, json_file_name)
-                            
-                            exp_info ={
-                                'img_path':img_path,
-                                'detected_box_list':detected_box_list,
-                                'model_dir':single_model_dir,
-                                'img_id':img_id,
-                            }
+                        # log exp
+                        img_id = img_file.split('/')[-1].split('.')[0]
+                        json_file_name = img_id + '_config_' + single_model_dir + '.json'
+                        json_filePath = os.path.join(self.run_dir, json_file_name)
+                        
+                        exp_info ={
+                            'img_path':img_path,
+                            'detected_box_list':detected_box_list,
+                            'model_dir':single_model_dir,
+                            'img_id':img_id,
+                        }
 
-                            json_string = json.dumps(exp_info)
-                            with open(json_filePath, 'w') as outfile:
-                                outfile.write(json_string)
-                        except:
-                            pass
+                        json_string = json.dumps(exp_info)
+                        with open(json_filePath, 'w') as outfile:
+                            outfile.write(json_string)
 
         return self.run_dir
     
@@ -395,20 +402,21 @@ class SummariseRuns():
         runs_data.to_csv(runs_data_path,index=False)
         print('Summary file: ' + runs_data_path)
 
-# # generate configure files
-# gen_fig = GenConfigureFiles('./datasets/full_body/train/good', './BasicCore/exp')
-# config_dir = gen_fig.genMultiScaleFiles(method='person')
-# print (config_dir)
+# generate configure files
+gen_fig = GenConfigureFiles('./datasets/full_body/train/good', './BasicCore/exp')
+config_dir = gen_fig.genMultiScaleFiles(method='random', scale_list=[1])
+print (config_dir)
 
-# # training 
-# train_session = TrainPatchCore(config_dir)
-# model_dir = train_session.trainModel()
-# print (model_dir)
+# training 
+train_session = TrainPatchCore(config_dir)
+model_dir = train_session.trainModel()
+print (model_dir)
 
 # inferencing
 img_dir = './datasets/full_body/test/objs'
-model_dir = './BasicCore/exp/2022_06_18_11_57_24/models'
-run_dir = InferenceCore(model_dir).continuous_inference(img_dir)
+run_dir =  InferenceCore(model_dir).inference_one_model(img_dir)
+# model_dir = './BasicCore/exp/2022_06_18_11_57_24/models'
+# run_dir = InferenceCore(model_dir).continuous_inference(img_dir)
 print (run_dir)
 
 # summary
