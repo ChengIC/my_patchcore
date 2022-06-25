@@ -417,11 +417,15 @@ train_session = TrainPatchCore(config_dir)
 model_dir = train_session.trainModel()
 print (model_dir)
 
-# # inferencing
+# # inferencing objs imgs
 img_dir = './datasets/full_body/test/objs'
 run_dir =  InferenceCore(model_dir).inference_one_model(img_dir)
-# # model_dir = './BasicCore/exp/2022_06_25_09_09_05/models'
-# run_dir = InferenceCore(model_dir).continuous_inference(img_dir)
+print (run_dir)
+
+
+# # inference good imgs
+img_dir = './datasets/full_body/train/good'
+run_dir =  InferenceCore(model_dir).inference_one_model(img_dir)
 print (run_dir)
 
 # summary
