@@ -116,7 +116,9 @@ class GenConfigureFiles():
         for num_imgs in num_imgs_list:
             for idx in range(10):
                 key = 'Bacth_{}_NumImgs_{}'.format(idx, num_imgs)
-                group_imgs[key] = random.choices(os.listdir(self.training_imgs_folder), k=num_imgs)
+                choose_files = random.choices(os.listdir(self.training_imgs_folder), k=num_imgs)
+                selected_files  = [s for s in choose_files]
+                group_imgs[key] = selected_files
         return group_imgs
 
     def genConfigFiles(self, scale=1, method='person'):
