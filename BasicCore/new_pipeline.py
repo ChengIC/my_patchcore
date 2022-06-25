@@ -17,6 +17,8 @@ import cv2
 from skimage.measure import label, regionprops
 import pandas as pd
 
+random.seed(19950918)
+
 # Generate configure files
 IMAGENET_MEAN = tensor([.485, .456, .406])
 IMAGENET_STD = tensor([.229, .224, .225])
@@ -109,11 +111,12 @@ class GenConfigureFiles():
         
         return person_imgs
 
-    def randomGenbyNumbers(self, num_imgs = 30):
+    def randomGenbyNumbers(self, num_imgs_list = [10, 30, 50, 70, 90, 110]):
         group_imgs = {}
-        for idx in range(10):
-            key = 'batch_'+ str(idx)
-            group_imgs[key] = random.choices(os.listdir(self.training_imgs_folder), k=num_imgs)
+        for num_imgs in num_imgs_list:
+            for idx in range(10):
+                key = 'Bacth_{}_NumImgs_{}'.format(idx, num_imgs)
+                group_imgs[key] = random.choices(os.listdir(self.training_imgs_folder), k=num_imgs)
         return group_imgs
 
     def genConfigFiles(self, scale=1, method='person'):
@@ -305,6 +308,7 @@ class InferenceCore():
                             'detected_box_list':detected_box_list,
                             'model_dir':single_model_dir,
                             'img_id':img_id,
+                            'pixel_score':pxl_lvl_anom_score.tolist(),
                         }
 
                         json_string = json.dumps(exp_info)
@@ -348,6 +352,7 @@ class InferenceCore():
                                 'detected_box_list':detected_box_list,
                                 'model_dir':single_model_dir,
                                 'img_id':img_id,
+                                'pixel_score':pxl_lvl_anom_score.tolist(),
                             }
 
                             json_string = json.dumps(exp_info)
@@ -396,15 +401,15 @@ class SummariseRuns():
                             runs_data['XMax'].append(bb[2])
                             runs_data['YMin'].append(bb[1])
                             runs_data['YMax'].append(bb[3])
-                                
+              
         runs_data = pd.DataFrame(runs_data)
         runs_data_path = os.path.join(self.summary_dir, 'runs' + genTimeStamp() + '.csv')
         runs_data.to_csv(runs_data_path,index=False)
         print('Summary file: ' + runs_data_path)
 
-# generate configure files
+### generate configure files
 gen_fig = GenConfigureFiles('./datasets/full_body/train/good', './BasicCore/exp')
-config_dir = gen_fig.genMultiScaleFiles(method='random', scale_list=[1])
+config_dir = gen_fig.genMultiScaleFiles(method='random', scale_list=[0.1])
 print (config_dir)
 
 # training 
@@ -412,10 +417,10 @@ train_session = TrainPatchCore(config_dir)
 model_dir = train_session.trainModel()
 print (model_dir)
 
-# inferencing
+# # inferencing
 img_dir = './datasets/full_body/test/objs'
 run_dir =  InferenceCore(model_dir).inference_one_model(img_dir)
-# model_dir = './BasicCore/exp/2022_06_18_11_57_24/models'
+# # model_dir = './BasicCore/exp/2022_06_25_09_09_05/models'
 # run_dir = InferenceCore(model_dir).continuous_inference(img_dir)
 print (run_dir)
 
