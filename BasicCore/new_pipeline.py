@@ -111,7 +111,7 @@ class GenConfigureFiles():
         
         return person_imgs
 
-    def randomGenbyNumbers(self, num_imgs_list = [10, 30, 50, 70, 90, 110]):
+    def randomGenbyNumbers(self, num_imgs_list = [30, 50, 70, 90, 110]):
         group_imgs = {}
         for num_imgs in num_imgs_list:
             for idx in range(10):
@@ -373,7 +373,7 @@ class SummariseRuns():
         self.summary_dir = os.path.join ('/'.join(self.run_dir.split('/')[:-1]), 'summary')
         if not os.path.exists(self.summary_dir):
             os.makedirs(self.summary_dir)
-    
+
     def returnPD(self):
         
         # define csv columns 
