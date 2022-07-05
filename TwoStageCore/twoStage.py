@@ -33,7 +33,7 @@ class TwoStageCore():
                     run_data = json.load(run_file)
                     detected_box_list = run_data['detected_box_list']
                     for selected_th in detected_box_list:
-                        if selected_th > th:
+                        if float(selected_th) > th:
                             detected_box = detected_box_list[selected_th]
                             for bb in detected_box:
                                 crop = img[bb[1]:bb[3], bb[0]:bb[2]]
@@ -46,6 +46,7 @@ class TwoStageCore():
                                         'img_id':img_id,
                                         'save_crop_path':crop_img_name,
                                         'bbox':bb,
+                                        'threshold':selected_th,
                                 }
 
                                 json_string = json.dumps(exp_info)
@@ -76,17 +77,17 @@ class TwoStageCore():
                                 config_folder=os.path.join ('/'.join(self.FirstConifgDir.split('/')[:-1]))).genMultiScaleFiles(method='random', 
                                                                                                                                 bacth_nums=1, 
                                                                                                                                 num_imgs_list = [100],
-                                                                                                                                scale_list=[1.1])
+                                                                                                                                scale_list=[0.5])
         self.SecondModelDir = TrainPatchCore(self.SecondConifgDir, save_name='models_2').trainModel()
 
 
     def inference(self):
-        self.SecondRunDir =  InferenceCore(self.FirstModelDir,save_name='runs_2').inference_one_model(self.obj_img_dir)
+        self.SecondRunDir =  InferenceCore(self.FirstModelDir,save_name='inference_runs_on_img').inference_one_model(self.obj_img_dir)
 
         self.SecondCutDir = self.getPatchesImage(run_dir=self.SecondRunDir,
                                                     img_dir=self.obj_img_dir,
                                                     th = 0.7,
-                                                    save_folder_name='cuts_2')
+                                                    save_folder_name='cut_abnormal_patch')
 
         self.FinalRunDir = InferenceCore(self.SecondModelDir,save_name='final_runs').inference_one_model(self.SecondCutDir)
 
