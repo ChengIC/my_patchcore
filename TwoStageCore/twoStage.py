@@ -24,6 +24,8 @@ class TwoStageCore():
              if '.json' in file:
                 
                 img_id = file.split('_config')[0]
+                config_id = file.split('config_')[1].split('.json')[0]
+
                 img_path = os.path.join(img_dir, img_id + '.jpg')
                 img = cv2.imread(img_path)
 
@@ -32,10 +34,24 @@ class TwoStageCore():
                     detected_box_list = run_data['detected_box_list']
                     for selected_th in detected_box_list:
                         detected_box = detected_box_list[selected_th]
-                        for idx, bb in enumerate(detected_box):
+                        for bb in detected_box:
                             crop = img[bb[1]:bb[3], bb[0]:bb[2]]
-                            save_crop_path = os.path.join(cutDir, '{}_crop{}.jpg'.format(img_id,idx))
+                            crop_img_name = '{}_config_{}_crop_{}.jpg'.format(img_id, config_id, unique_id(12))
+                            
+                            save_crop_path = os.path.join(cutDir, crop_img_name)
                             cv2.imwrite(save_crop_path, crop)
+
+                            exp_info ={
+                                    'img_id':img_id,
+                                    'save_crop_path':crop_img_name,
+                                    'bbox':bb,
+                            }
+
+                            json_string = json.dumps(exp_info)
+                            crop_json_name = crop_img_name.replace('jpg','json')
+                            crop_json_path = os.path.join(cutDir, crop_json_name)
+                            with open(crop_json_path, 'w') as outfile:
+                                outfile.write(json_string)
 
         print('finish cropping and return cut dir')
         return cutDir
@@ -58,12 +74,16 @@ class TwoStageCore():
         self.SecondConifgDir = GenConfigureFiles(self.FirstCutDir, self.exp_dir, save_name='config_2',
                                 config_folder=os.path.join ('/'.join(self.FirstConifgDir.split('/')[:-1]))).genMultiScaleFiles(method='random', 
                                                                                                                                 bacth_nums=1, 
-                                                                                                                                num_imgs_list = [1000],
+                                                                                                                                num_imgs_list = [100],
                                                                                                                                 scale_list=[1.1])
         self.SecondModelDir = TrainPatchCore(self.SecondConifgDir, save_name='models_2').trainModel()
-        # self.FirstRunDir =  InferenceCore(self.FirstModelDir,save_name='runs_2').inference_one_model(self.normal_img_dir)
-        # self.FirstCutDir = self.getPatchesImage(save_folder_name='cuts_2')
-    
+
+
+    # def inference(self):
+    #     self.SecondRunDir =  InferenceCore(self.FirstModelDir,save_name='runs_2').inference_one_model(self.obj_img_dir)
+
+
+
 
 
 if __name__ == "__main__":
