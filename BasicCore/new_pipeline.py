@@ -357,7 +357,6 @@ class InferenceCore():
                                 'detected_box_list':detected_box_list,
                                 'model_dir':single_model_dir,
                                 'img_id':img_id,
-                                'pixel_score':pxl_lvl_anom_score.tolist(),
                             }
 
                             json_string = json.dumps(exp_info)

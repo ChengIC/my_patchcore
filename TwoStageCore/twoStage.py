@@ -64,21 +64,21 @@ class TwoStageCore():
         self.FirstConifgDir = GenConfigureFiles(self.normal_img_dir, 
                                                 self.exp_dir,
                                                 save_name='config_1').genMultiScaleFiles(method='random', bacth_nums=1, 
-                                                                                        num_imgs_list = [70],
-                                                                                        scale_list=[0.1])
+                                                                                        num_imgs_list = [1],
+                                                                                        scale_list=[1])
         self.FirstModelDir = TrainPatchCore(self.FirstConifgDir, save_name='models_1').trainModel()
-        self.FirstRunDir =  InferenceCore(self.FirstModelDir,save_name='runs_1').inference_one_model(self.normal_img_dir)
-        self.FirstCutDir = self.getPatchesImage(run_dir=self.FirstRunDir,
-                                                img_dir=self.normal_img_dir,
-                                                save_folder_name='cuts_1')
+        # self.FirstRunDir =  InferenceCore(self.FirstModelDir,save_name='runs_1').inference_one_model(self.normal_img_dir)
+        # self.FirstCutDir = self.getPatchesImage(run_dir=self.FirstRunDir,
+        #                                         img_dir=self.normal_img_dir,
+        #                                         save_folder_name='cuts_1')
 
         # train second patch-core
-        self.SecondConifgDir = GenConfigureFiles(self.FirstCutDir, self.exp_dir, save_name='config_2',
-                                config_folder=os.path.join ('/'.join(self.FirstConifgDir.split('/')[:-1]))).genMultiScaleFiles(method='random', 
-                                                                                                                                bacth_nums=1, 
-                                                                                                                                num_imgs_list = [100],
-                                                                                                                                scale_list=[0.5])
-        self.SecondModelDir = TrainPatchCore(self.SecondConifgDir, save_name='models_2').trainModel()
+        # self.SecondConifgDir = GenConfigureFiles(self.FirstCutDir, self.exp_dir, save_name='config_2',
+        #                         config_folder=os.path.join ('/'.join(self.FirstConifgDir.split('/')[:-1]))).genMultiScaleFiles(method='random', 
+        #                                                                                                                         bacth_nums=1, 
+        #                                                                                                                         num_imgs_list = [100],
+        #                                                                                                                         scale_list=[0.5])
+        # self.SecondModelDir = TrainPatchCore(self.SecondConifgDir, save_name='models_2').trainModel()
 
 
     def inference(self):
@@ -98,4 +98,5 @@ if __name__ == "__main__":
 
     tS = TwoStageCore(normal_img_dir=normal_img_dir,obj_img_dir=obj_img_dir)
     tS.train()
-    tS.inference()
+    # tS.inference()
+
