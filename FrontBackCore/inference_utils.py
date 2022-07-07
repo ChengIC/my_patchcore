@@ -32,7 +32,6 @@ def load_model_from_dir(model_path):
 
     return model, model_paras, config_data
 
-
 def load_image_to_tensor_cpu(img_path, config_data):
 
     IMAGENET_MEAN = tensor([.485, .456, .406])
@@ -76,7 +75,7 @@ class InferenceCore():
         result  = {
             'img_path': img_path,
             'img_score':img_lvl_anom_score,
-            # 'pixel_score':pxl_lvl_anom_score,
+            'pixel_score':pxl_lvl_anom_score,
             'bbox':detected_box_list,
         }
 

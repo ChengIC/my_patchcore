@@ -6,7 +6,7 @@ import random
 import json
 from tqdm import tqdm
 
-random.seed(19940308)
+# random.seed(19940308)
 
 # generate two configurations front and back
 
@@ -21,7 +21,7 @@ def genConfigFile(exp_dir, img_dir, scale=1, info='front', num_of_imgs=10):
     for img_file in os.listdir(img_dir):
         if info in img_file:
             qualified_list.append(img_file)
-    
+    random.shuffle(qualified_list)
     selected_list = random.choices(qualified_list, k=num_of_imgs)
 
     config_data = {}
@@ -47,8 +47,10 @@ if __name__ == "__main__":
     ############
     ##### training 
     ############
-    config_dir1 = genConfigFile(exp_dir, img_dir, scale=1, info='front', num_of_imgs=1)
-    config_dir2 = genConfigFile(exp_dir, img_dir, scale=1, info='back', num_of_imgs=1)
+    config_dir1, config_dir2 = None, None
+    for i in range(3):
+        config_dir1 = genConfigFile(exp_dir, img_dir, scale=1, info='front', num_of_imgs=3)
+        config_dir2 = genConfigFile(exp_dir, img_dir, scale=1, info='back', num_of_imgs=3)
     
     for config_dir in [config_dir1, config_dir2]:
         model_dir = TrainPatchCore(config_dir).trainModel()
@@ -64,11 +66,11 @@ if __name__ == "__main__":
         model_path = os.path.join(model_dir, single_model_dir)
         info = single_model_dir.split('_')[-1]
         
-        if os.path.isdir(model_path):
-            print ('loading model from {}'.format(model_path))
-            run_core = InferenceCore(model_path)
-            # inference img dir
-            for img_file in tqdm(os.listdir(obj_dir)):
-                if info in img_file:
-                    result = run_core.inference_one_img(os.path.join(obj_dir,img_file))
-                    print (result)
+        # if os.path.isdir(model_path):
+        #     print ('loading model from {}'.format(model_path))
+        #     run_core = InferenceCore(model_path)
+        #     # inference img dir
+        #     for img_file in tqdm(os.listdir(obj_dir)):
+        #         if info in img_file:
+        #             result = run_core.inference_one_img(os.path.join(obj_dir,img_file))
+        #             print (result)
