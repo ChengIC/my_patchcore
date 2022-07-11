@@ -49,10 +49,10 @@ if __name__ == "__main__":
     ##### Generate Config Files
     ############
     config_dir1, config_dir2 = None, None
-    for i in range(30):
+    for i in range(2):
         random.seed(i)
-        config_dir1 = genConfigFile(exp_dir, img_dir, scale=1, info='front', num_of_imgs=30)
-        config_dir2 = genConfigFile(exp_dir, img_dir, scale=1, info='back', num_of_imgs=30)
+        config_dir1 = genConfigFile(exp_dir, img_dir, scale=0.1, info='front', num_of_imgs=2)
+        config_dir2 = genConfigFile(exp_dir, img_dir, scale=0.1, info='back', num_of_imgs=2)
 
     ############
     ##### Training Model
@@ -74,7 +74,6 @@ if __name__ == "__main__":
         if os.path.isdir(model_path):
             print ('loading model from {}'.format(model_path))
             run_core = InferenceCore(model_path)
-            
             for img_file in tqdm(os.listdir(obj_dir)):
                 result, run_dir = run_core.inference_one_img(os.path.join(obj_dir,img_file))
                 json_string = json.dumps(result)
@@ -83,11 +82,8 @@ if __name__ == "__main__":
                 with open(json_file_path, 'w') as outfile:
                     outfile.write(json_string)
 
-    print ('finish inference')
-
-    # ############
-    # ##### visualization   
-    # ############
-    vis = VisRuns(runs_dir=run_dir)
-    vis.vis_all_runs(img_dir= './datasets/full_body/test/objs',
-                     annotation_dir='./datasets/full_body/Annotations')
+            vis = VisRuns(runs_dir=run_dir)
+            vis.vis_all_runs(img_dir= './datasets/full_body/test/objs',
+                            annotation_dir='./datasets/full_body/Annotations')
+            
+                
