@@ -120,3 +120,13 @@ def returnColorFeature(pixel_score):
     rgba_img = cmap(fmap_img)*255
     rgb_img = rgba_img[:,:,0:3]
     return rgb_img
+
+def returnNormalizeMap(pixel_score):
+    fmap_tensor = torch.tensor(pixel_score)
+    score_range = fmap_tensor.min(), fmap_tensor.max()
+    fmap_img = pred_to_img(fmap_tensor, score_range)
+    return fmap_img
+
+
+def chunkify(lst,n):
+    return [lst[i::n] for i in range(n)]

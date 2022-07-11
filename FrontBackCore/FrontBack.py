@@ -67,23 +67,36 @@ if __name__ == "__main__":
     # ############
     obj_dir = './datasets/full_body/test/objs'
     
-    for single_model_dir in os.listdir(model_dir):
-        
-        model_path = os.path.join(model_dir, single_model_dir)
+    img_list_in_chunks = chunkify(os.listdir(obj_dir),100)
 
-        if os.path.isdir(model_path):
-            print ('loading model from {}'.format(model_path))
-            run_core = InferenceCore(model_path)
-            for img_file in tqdm(os.listdir(obj_dir)):
-                result, run_dir = run_core.inference_one_img(os.path.join(obj_dir,img_file))
-                json_string = json.dumps(result)
-                json_filename = '{}_by_{}.json'.format(img_file.split('.jpg')[0],single_model_dir)
-                json_file_path = os.path.join(run_dir, json_filename)
-                with open(json_file_path, 'w') as outfile:
-                    outfile.write(json_string)
+    for chunk in img_list_in_chunks:
+        print (len(chunk))
+        for single_model_dir in os.listdir(model_dir):
+            
+            model_path = os.path.join(model_dir, single_model_dir)
 
-            vis = VisRuns(runs_dir=run_dir)
-            vis.vis_all_runs(img_dir= './datasets/full_body/test/objs',
-                            annotation_dir='./datasets/full_body/Annotations')
+            if os.path.isdir(model_path):
+                print ('loading model from {}'.format(model_path))
+                run_core = InferenceCore(model_path)
+
+
+                for img_file in tqdm(chunk):
+                    result, run_dir = run_core.inference_one_img(os.path.join(obj_dir,img_file))
+
+                    json_string = json.dumps(result)
+                    json_filename = '{}_by_{}.json'.format(img_file.split('.jpg')[0],single_model_dir)
+                    json_file_path = os.path.join(run_dir, json_filename)
+                    with open(json_file_path, 'w') as outfile:
+                        outfile.write(json_string)
+
+        print ('================================================================')
+        print ('running through a single chunk and start visulize the average feature maps')
+
+        vis = VisRuns(runs_dir=run_dir)
+        vis.vis_average(img_dir= './datasets/full_body/test/objs',
+                        annotation_dir='./datasets/full_body/Annotations')
+
+        print('Visualize OnE chunk')
+        print('****************************************************************')
             
                 
