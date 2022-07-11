@@ -49,10 +49,10 @@ if __name__ == "__main__":
     ##### Generate Config Files
     ############
     config_dir1, config_dir2 = None, None
-    for i in range(2):
+    for i in range(30):
         random.seed(i)
-        config_dir1 = genConfigFile(exp_dir, img_dir, scale=0.1, info='front', num_of_imgs=2)
-        config_dir2 = genConfigFile(exp_dir, img_dir, scale=0.1, info='back', num_of_imgs=2)
+        config_dir1 = genConfigFile(exp_dir, img_dir, scale=1, info='front', num_of_imgs=30)
+        config_dir2 = genConfigFile(exp_dir, img_dir, scale=1, info='back', num_of_imgs=30)
 
     ############
     ##### Training Model
