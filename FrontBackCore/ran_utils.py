@@ -7,6 +7,35 @@ from torch import tensor
 import random
 import cv2
 from skimage.measure import label, regionprops
+import xml.etree.ElementTree as ET
+import matplotlib.pyplot as plt
+from PIL import Image
+import io
+import torch
+
+def getBBox(annotation_dir, img_id):
+    xml_filePath = os.path.join (annotation_dir, img_id + '.xml')
+    xml_file = open(xml_filePath, encoding='UTF-8')
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+
+    bboxes = []
+    for obj in root.iter('object'):
+        cls = obj.find('name').text
+        if cls != 'HUMAN':
+            xmlbox = obj.find('bndbox')
+            xmin = int(xmlbox.find('xmin').text)
+            xmax = int(xmlbox.find('xmax').text)
+            ymin = int(xmlbox.find('ymin').text)
+            ymax = int(xmlbox.find('ymax').text)
+            single_box = {
+                    'xmin':xmin,
+                    'xmax':xmax,
+                    'ymin':ymin,
+                    'ymax':ymax,
+            }
+            bboxes.append(single_box)
+    return bboxes
 
 IMG_FORMATS = ['bmp', 'dng', 'jpeg', 'jpg', 'mpo', 'png', 'tif', 'tiff', 'webp']
 IMAGENET_MEAN = tensor([.485, .456, .406])
@@ -70,3 +99,24 @@ def mean_size_folder(training_folder):
     width_list = np.array(width_list)
     height_list = np.array(height_list)
     return [int(np.mean(height_list)),int(np.mean(width_list))]
+
+def renderFeatureMap(pxl_lvl_anom_score):
+    score_range = pxl_lvl_anom_score.min(), pxl_lvl_anom_score.max()
+    fmap_img = pred_to_img(pxl_lvl_anom_score, score_range)
+    plt.imshow(fmap_img, cmap="jet", alpha=0.5)
+    plt.axis('off')
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', bbox_inches='tight', pad_inches=0, transparent=True)
+    overlay_img = Image.open(buf)
+    return np.array(overlay_img)
+
+def returnColorFeature(pixel_score):
+    fmap_tensor = torch.tensor(pixel_score)
+    score_range = fmap_tensor.min(), fmap_tensor.max()
+    fmap_img = pred_to_img(fmap_tensor, score_range)
+    fmap_img = fmap_img[:,:,0]
+
+    cmap = plt.get_cmap('jet')
+    rgba_img = cmap(fmap_img)*255
+    rgb_img = rgba_img[:,:,0:3]
+    return rgb_img

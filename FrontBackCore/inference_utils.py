@@ -70,13 +70,11 @@ class InferenceCore():
         
         test_img_tensor, HeatMap_Size = load_image_to_tensor_cpu(img_path, self.config_data)
         img_lvl_anom_score, pxl_lvl_anom_score = self.model.inference (test_img_tensor, self.model_paras, HeatMap_Size)
-        detected_box_list = PixelScore2Boxes(pxl_lvl_anom_score)
 
         result  = {
             'img_path': img_path,
-            'img_score':img_lvl_anom_score,
-            'pixel_score':pxl_lvl_anom_score,
-            'bbox':detected_box_list,
+            'img_score':img_lvl_anom_score.tolist(),
+            'pixel_score':pxl_lvl_anom_score.tolist(),
         }
 
-        return result
+        return result, self.run_dir

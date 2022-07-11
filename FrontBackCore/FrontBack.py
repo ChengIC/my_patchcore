@@ -5,6 +5,7 @@ from ran_utils import *
 import random
 import json
 from tqdm import tqdm
+from visualize_utils import *
 
 # random.seed(19940308)
 
@@ -41,36 +42,52 @@ def genConfigFile(exp_dir, img_dir, scale=1, info='front', num_of_imgs=10):
 
 # unit test
 if __name__ == "__main__":
-    exp_dir = './FrontBackCore/exp/' + genTimeStamp()
+    exp_dir = './FrontBackCore/exp/scale1_num30_models30_' + genTimeStamp()
     img_dir = './datasets/full_body/train/good'
 
     ############
-    ##### training 
+    ##### Generate Config Files
     ############
     config_dir1, config_dir2 = None, None
-    for i in range(3):
-        config_dir1 = genConfigFile(exp_dir, img_dir, scale=1, info='front', num_of_imgs=3)
-        config_dir2 = genConfigFile(exp_dir, img_dir, scale=1, info='back', num_of_imgs=3)
-    
+    for i in range(30):
+        random.seed(i)
+        config_dir1 = genConfigFile(exp_dir, img_dir, scale=1, info='front', num_of_imgs=30)
+        config_dir2 = genConfigFile(exp_dir, img_dir, scale=1, info='back', num_of_imgs=30)
+
+    ############
+    ##### Training Model
+    ############
     for config_dir in [config_dir1, config_dir2]:
         model_dir = TrainPatchCore(config_dir).trainModel()
         print ('finished training model of {}'.format(model_dir))
 
 
-    ############
-    ##### inference  
-    ############
+    # ############
+    # ##### inference  
+    # ############
     obj_dir = './datasets/full_body/test/objs'
-    ### model_dir = './FrontBackCore/exp/2022_07_06_16_42_45/models'
+    
     for single_model_dir in os.listdir(model_dir):
-        model_path = os.path.join(model_dir, single_model_dir)
-        info = single_model_dir.split('_')[-1]
         
-        # if os.path.isdir(model_path):
-        #     print ('loading model from {}'.format(model_path))
-        #     run_core = InferenceCore(model_path)
-        #     # inference img dir
-        #     for img_file in tqdm(os.listdir(obj_dir)):
-        #         if info in img_file:
-        #             result = run_core.inference_one_img(os.path.join(obj_dir,img_file))
-        #             print (result)
+        model_path = os.path.join(model_dir, single_model_dir)
+
+        if os.path.isdir(model_path):
+            print ('loading model from {}'.format(model_path))
+            run_core = InferenceCore(model_path)
+            
+            for img_file in tqdm(os.listdir(obj_dir)):
+                result, run_dir = run_core.inference_one_img(os.path.join(obj_dir,img_file))
+                json_string = json.dumps(result)
+                json_filename = '{}_by_{}.json'.format(img_file.split('.jpg')[0],single_model_dir)
+                json_file_path = os.path.join(run_dir, json_filename)
+                with open(json_file_path, 'w') as outfile:
+                    outfile.write(json_string)
+
+    print ('finish inference')
+
+    # ############
+    # ##### visualization   
+    # ############
+    vis = VisRuns(runs_dir=run_dir)
+    vis.vis_all_runs(img_dir= './datasets/full_body/test/objs',
+                     annotation_dir='./datasets/full_body/Annotations')
