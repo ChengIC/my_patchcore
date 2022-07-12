@@ -55,6 +55,11 @@ if __name__ == "__main__":
             config_dir1 = genConfigFile(exp_dir, img_dir, scale=s, info='front', num_of_imgs=30)
             config_dir2 = genConfigFile(exp_dir, img_dir, scale=s, info='back', num_of_imgs=30)
 
+    # ###### unit test
+    # for i in range(3):
+    #     config_dir1 = genConfigFile(exp_dir, img_dir, scale=0.1, info='front', num_of_imgs=3)
+    #     config_dir2 = genConfigFile(exp_dir, img_dir, scale=0.1, info='back', num_of_imgs=3)
+
     ############
     ##### Training Model
     ############
