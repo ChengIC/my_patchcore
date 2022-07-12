@@ -7,7 +7,7 @@ import json
 from tqdm import tqdm
 from visualize_utils import *
 
-# random.seed(19940308)
+random.seed(19940308)
 
 # generate two configurations front and back
 
@@ -42,7 +42,8 @@ def genConfigFile(exp_dir, img_dir, scale=1, info='front', num_of_imgs=10):
 
 # unit test
 if __name__ == "__main__":
-    exp_dir = './FrontBackCore/exp/scale1_num30_models30_' + genTimeStamp()
+
+    exp_dir = './FrontBackCore/exp/scale_various_num30_models150_' + genTimeStamp()
     img_dir = './datasets/full_body/train/good'
 
     ############
@@ -50,9 +51,9 @@ if __name__ == "__main__":
     ############
     config_dir1, config_dir2 = None, None
     for i in range(30):
-        random.seed(i)
-        config_dir1 = genConfigFile(exp_dir, img_dir, scale=1, info='front', num_of_imgs=30)
-        config_dir2 = genConfigFile(exp_dir, img_dir, scale=1, info='back', num_of_imgs=30)
+        for s in [0.8, 1.0, 1.2, 1.4, 1.6]:
+            config_dir1 = genConfigFile(exp_dir, img_dir, scale=s, info='front', num_of_imgs=30)
+            config_dir2 = genConfigFile(exp_dir, img_dir, scale=s, info='back', num_of_imgs=30)
 
     ############
     ##### Training Model
@@ -69,8 +70,7 @@ if __name__ == "__main__":
     
     img_list_in_chunks = chunkify(os.listdir(obj_dir),100)
 
-    for chunk in img_list_in_chunks:
-        print (len(chunk))
+    for chunk in tqdm(img_list_in_chunks):
         for single_model_dir in os.listdir(model_dir):
             
             model_path = os.path.join(model_dir, single_model_dir)

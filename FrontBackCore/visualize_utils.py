@@ -72,7 +72,8 @@ class VisRuns():
             avg_fmap_img = avg_fmap.transpose(0, 1, 2)
 
             fv = returnColorFeature(avg_fmap_img)
-
+            fv = fv[...,[2,0,1]].copy() # rgb to bgr
+            
             # get ground truth bboxes beside
             img_path = os.path.join(self.img_dir, img_id+'.jpg')
             sample_img = cv2.imread(img_path)
