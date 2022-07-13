@@ -117,7 +117,7 @@ class VisRuns():
                     image_file_path = os.path.join(self.vis_dir, json_file_name.replace('json','png'))
                     cv2.imwrite(image_file_path,np.hstack((fv,image)))
 
-                    # os.remove(json_file_path)
+                    os.remove(json_file_path)
 
 # vis = VisRuns(runs_dir='./FrontBackCore/exp/scale1_num30_models30_2022_07_11_18_13_49/runs')
 # vis.vis_average(img_dir= './datasets/full_body/test/objs',
