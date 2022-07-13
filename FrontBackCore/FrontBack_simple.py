@@ -52,7 +52,7 @@ if __name__ == "__main__":
         ##### Generate Config Files
         ############
         config_dir1, config_dir2 = None, None
-        for i in range(30):
+        for i in range(15):
             config_dir1 = genConfigFile(exp_dir, img_dir, scale=1, info='front', num_of_imgs=num)
             config_dir2 = genConfigFile(exp_dir, img_dir, scale=1, info='back', num_of_imgs=num)
 
