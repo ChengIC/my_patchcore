@@ -43,7 +43,7 @@ def genConfigFile(exp_dir, img_dir, scale=1, info='front', num_of_imgs=10):
 if __name__ == "__main__":
     scale = 0.1
     models_num = 1
-    for num in [2]:
+    for num in [2,3]:
         exp_dir = './FrontBackCore/exp/scale{}_num{}_models{}_'.format(scale, num, models_num) + genTimeStamp()
         img_dir = './datasets/full_body/train/good'
 
@@ -100,5 +100,7 @@ if __name__ == "__main__":
 
         #####
         # remove models to save storage
+        print ('Delete model dir to save storage')
         shutil.rmtree(model_dir)
+        shutil.rmtree(all_run_dir)
                 

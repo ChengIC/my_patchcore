@@ -100,5 +100,7 @@ if __name__ == "__main__":
 
         #####
         # remove models to save storage
+        print ('Delete model dir and run dir to save storage')
         shutil.rmtree(model_dir)
+        shutil.rmtree(all_run_dir)
                 
