@@ -67,7 +67,7 @@ if __name__ == "__main__":
         # ##### inference  
         # ############
         obj_dir = './datasets/full_body/test/objs'
-        img_files = os.listdir(obj_dir)[0:20]
+        img_files = os.listdir(obj_dir)
 
         for single_model_dir in os.listdir(model_dir):
                 
