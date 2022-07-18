@@ -6,11 +6,11 @@ import random
 import json
 from tqdm import tqdm
 from visualize_utils import *
+import shutil
 
 random.seed(19940308)
 
 # generate two configurations front and back
-
 def genConfigFile(exp_dir, img_dir, scale=1, info='front', num_of_imgs=10):
 
     config_dir = os.path.join(exp_dir, 'config_' + info)
@@ -39,69 +39,66 @@ def genConfigFile(exp_dir, img_dir, scale=1, info='front', num_of_imgs=10):
     return config_dir
 
 
-
 # unit test
 if __name__ == "__main__":
+    scale = 1
+    models_num = 30
+    for num in [5,55,105]:
+        exp_dir = './FrontBackCore/exp/scale{}_num{}_models{}_'.format(scale, num, models_num) + genTimeStamp()
+        img_dir = './datasets/full_body/train/good'
 
-    exp_dir = './FrontBackCore/exp/scale_various_num30_models150_' + genTimeStamp()
-    img_dir = './datasets/full_body/train/good'
+        ############
+        ##### Generate Config Files
+        ############
+        config_dir1, config_dir2 = None, None
+        for i in range(models_num):
+            config_dir1 = genConfigFile(exp_dir, img_dir, scale=scale, info='front', num_of_imgs=num)
+            config_dir2 = genConfigFile(exp_dir, img_dir, scale=scale, info='back', num_of_imgs=num)
 
-    ############
-    ##### Generate Config Files
-    ############
-    config_dir1, config_dir2 = None, None
-    for i in range(30):
-        for s in [0.8, 1.0, 1.2, 1.4, 1.6]:
-            config_dir1 = genConfigFile(exp_dir, img_dir, scale=s, info='front', num_of_imgs=30)
-            config_dir2 = genConfigFile(exp_dir, img_dir, scale=s, info='back', num_of_imgs=30)
-
-    # ###### unit test
-    # for i in range(3):
-    #     config_dir1 = genConfigFile(exp_dir, img_dir, scale=0.1, info='front', num_of_imgs=3)
-    #     config_dir2 = genConfigFile(exp_dir, img_dir, scale=0.1, info='back', num_of_imgs=3)
-
-    ############
-    ##### Training Model
-    ############
-    for config_dir in [config_dir1, config_dir2]:
-        model_dir = TrainPatchCore(config_dir).trainModel()
-        print ('finished training model of {}'.format(model_dir))
+        ############
+        ##### Training Model
+        ############
+        for config_dir in [config_dir1, config_dir2]:
+            model_dir = TrainPatchCore(config_dir).trainModel()
+            print ('finished training model of {}'.format(model_dir))
 
 
-    # ############
-    # ##### inference  
-    # ############
-    obj_dir = './datasets/full_body/test/objs'
-    
-    img_list_in_chunks = chunkify(os.listdir(obj_dir),100)
+        # ############
+        # ##### inference  
+        # ############
+        obj_dir = './datasets/full_body/test/objs'
+        img_files = os.listdir(obj_dir)[0:20]
 
-    for chunk in tqdm(img_list_in_chunks):
         for single_model_dir in os.listdir(model_dir):
-            
+                
             model_path = os.path.join(model_dir, single_model_dir)
 
             if os.path.isdir(model_path):
                 print ('loading model from {}'.format(model_path))
                 run_core = InferenceCore(model_path)
 
-
-                for img_file in tqdm(chunk):
-                    result, run_dir = run_core.inference_one_img(os.path.join(obj_dir,img_file))
+                for img_file in tqdm(img_files):
+                    result, single_run_dir = run_core.inference_one_img(os.path.join(obj_dir,img_file))
 
                     json_string = json.dumps(result)
                     json_filename = '{}_by_{}.json'.format(img_file.split('.jpg')[0],single_model_dir)
-                    json_file_path = os.path.join(run_dir, json_filename)
+                    json_file_path = os.path.join(single_run_dir, json_filename)
                     with open(json_file_path, 'w') as outfile:
                         outfile.write(json_string)
 
-        print ('================================================================')
-        print ('running through a single chunk and start visulize the average feature maps')
+        # ############
+        # ##### Visulization  
+        # ############
+        all_run_dir = '/'.join(single_run_dir.split('/')[:-1])
+        print ('The overall runs dir is {}'.format(all_run_dir))
+        for run_dir in os.listdir(all_run_dir):
+            single_run_path = os.path.join(all_run_dir,run_dir)
+            vis = VisRuns(single_run_path)
+            vis.vis_all_runs(img_dir= './datasets/full_body/test/objs',
+                            annotation_dir='./datasets/full_body/Annotations')
+        
 
-        vis = VisRuns(runs_dir=run_dir)
-        vis.vis_average(img_dir= './datasets/full_body/test/objs',
-                        annotation_dir='./datasets/full_body/Annotations')
-
-        print('Visualize OnE chunk')
-        print('****************************************************************')
-            
+        #####
+        # remove models to save storage
+        shutil.rmtree(model_dir)
                 

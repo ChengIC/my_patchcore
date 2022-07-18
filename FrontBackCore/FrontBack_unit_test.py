@@ -11,7 +11,6 @@ import shutil
 random.seed(19940308)
 
 # generate two configurations front and back
-
 def genConfigFile(exp_dir, img_dir, scale=1, info='front', num_of_imgs=10):
 
     config_dir = os.path.join(exp_dir, 'config_' + info)
@@ -40,21 +39,21 @@ def genConfigFile(exp_dir, img_dir, scale=1, info='front', num_of_imgs=10):
     return config_dir
 
 
-
 # unit test
 if __name__ == "__main__":
-    
-    for num in [5,10,15,20,25,30,35]:
-        exp_dir = './FrontBackCore/exp/scale_1_num{}_models30_'.format(num) + genTimeStamp()
+    scale = 0.1
+    models_num = 1
+    for num in [2]:
+        exp_dir = './FrontBackCore/exp/scale{}_num{}_models{}_'.format(scale, num, models_num) + genTimeStamp()
         img_dir = './datasets/full_body/train/good'
 
         ############
         ##### Generate Config Files
         ############
         config_dir1, config_dir2 = None, None
-        for i in range(15):
-            config_dir1 = genConfigFile(exp_dir, img_dir, scale=1, info='front', num_of_imgs=num)
-            config_dir2 = genConfigFile(exp_dir, img_dir, scale=1, info='back', num_of_imgs=num)
+        for i in range(models_num):
+            config_dir1 = genConfigFile(exp_dir, img_dir, scale=scale, info='front', num_of_imgs=num)
+            config_dir2 = genConfigFile(exp_dir, img_dir, scale=scale, info='back', num_of_imgs=num)
 
         ############
         ##### Training Model
@@ -68,34 +67,38 @@ if __name__ == "__main__":
         # ##### inference  
         # ############
         obj_dir = './datasets/full_body/test/objs'
-        
-        img_list_in_chunks = chunkify(os.listdir(obj_dir),100)
+        img_files = os.listdir(obj_dir)[0:20]
 
-        for chunk in tqdm(img_list_in_chunks):
-            for single_model_dir in os.listdir(model_dir):
+        for single_model_dir in os.listdir(model_dir):
                 
-                model_path = os.path.join(model_dir, single_model_dir)
+            model_path = os.path.join(model_dir, single_model_dir)
 
-                if os.path.isdir(model_path):
-                    print ('loading model from {}'.format(model_path))
-                    run_core = InferenceCore(model_path)
+            if os.path.isdir(model_path):
+                print ('loading model from {}'.format(model_path))
+                run_core = InferenceCore(model_path)
 
+                for img_file in tqdm(img_files):
+                    result, single_run_dir = run_core.inference_one_img(os.path.join(obj_dir,img_file))
 
-                    for img_file in tqdm(chunk):
-                        result, run_dir = run_core.inference_one_img(os.path.join(obj_dir,img_file))
+                    json_string = json.dumps(result)
+                    json_filename = '{}_by_{}.json'.format(img_file.split('.jpg')[0],single_model_dir)
+                    json_file_path = os.path.join(single_run_dir, json_filename)
+                    with open(json_file_path, 'w') as outfile:
+                        outfile.write(json_string)
 
-                        json_string = json.dumps(result)
-                        json_filename = '{}_by_{}.json'.format(img_file.split('.jpg')[0],single_model_dir)
-                        json_file_path = os.path.join(run_dir, json_filename)
-                        with open(json_file_path, 'w') as outfile:
-                            outfile.write(json_string)
-
-            vis = VisRuns(runs_dir=run_dir)
+        # ############
+        # ##### Visulization  
+        # ############
+        all_run_dir = '/'.join(single_run_dir.split('/')[:-1])
+        print ('The overall runs dir is {}'.format(all_run_dir))
+        for run_dir in os.listdir(all_run_dir):
+            single_run_path = os.path.join(all_run_dir,run_dir)
+            vis = VisRuns(single_run_path)
             vis.vis_all_runs(img_dir= './datasets/full_body/test/objs',
                             annotation_dir='./datasets/full_body/Annotations')
         
 
         #####
-        # remove models
+        # remove models to save storage
         shutil.rmtree(model_dir)
                 

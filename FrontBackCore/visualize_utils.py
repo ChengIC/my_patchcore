@@ -36,8 +36,8 @@ def selected_fmap (all_feature_images):
 class VisRuns():
     def __init__(self, runs_dir=None, save_name='vis') :
         self.runs_dir = runs_dir
-
-        self.vis_dir = os.path.join ('/'.join(self.runs_dir.split('/')[:-1]), save_name)
+        self.runs_names = self.runs_dir.split('/')[-1]
+        self.vis_dir = os.path.join ('/'.join(self.runs_dir.split('/')[:-2]), save_name, self.runs_names)
         if not os.path.exists(self.vis_dir):
             os.makedirs(self.vis_dir)
     

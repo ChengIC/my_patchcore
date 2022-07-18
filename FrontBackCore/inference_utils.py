@@ -58,7 +58,8 @@ class InferenceCore():
 
     def __init__(self, model_path=None, save_name='runs') :
         self.model_path = model_path
-        self.run_dir = os.path.join ('/'.join(self.model_path.split('/')[:-2]), save_name)
+        self.model_name = self.model_path.split('/')[-1]
+        self.run_dir = os.path.join ('/'.join(self.model_path.split('/')[:-2]), save_name, self.model_name)
         if not os.path.exists(self.run_dir):
             os.makedirs(self.run_dir)
 
