@@ -27,7 +27,6 @@ def count_pixels(pixel_np_list):
     for th in np.arange(0, 1, 0.05):
         count_hi = (pixel_np_list>=th).sum()
         count_dict[th] = int(count_hi)
-    print (count_dict)
     return count_dict
 
 
