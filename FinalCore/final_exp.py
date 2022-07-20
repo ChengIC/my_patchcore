@@ -36,9 +36,9 @@ if __name__ == "__main__":
     ########################################
     ######### ensemble settings ############
     ########################################
-    scale = 0.1
-    num_imgs = 5
-    models_num = 3
+    scale = 1
+    num_imgs = 15
+    models_num = 30
     
     ########################################
     ############### exp folders ############
@@ -73,29 +73,21 @@ if __name__ == "__main__":
     ##### runs multi-patchcores  ###########
     ########################################
     obj_dir = './datasets/full_body/test/objs'
-    img_files = os.listdir(obj_dir)
+    img_files = os.listdir(obj_dir)[0:10]
 
     for single_model_dir in os.listdir(model_dir):
-                
         model_path = os.path.join(model_dir, single_model_dir)
-
         if os.path.isdir(model_path):
             print ('loading model from {}'.format(model_path))
             run_core = InferenceCore(model_path)
 
             for img_file in tqdm(img_files):
-                result, single_run_dir = run_core.inference_one_img(os.path.join(obj_dir,img_file))
-
+                result = run_core.inference_one_img(os.path.join(obj_dir,img_file))
                 json_string = json.dumps(result)
                 json_filename = '{}_by_{}.json'.format(img_file.split('.jpg')[0],single_model_dir)
-                json_file_path = os.path.join(single_run_dir, json_filename)
+                json_folder = os.path.join(runs_dir, img_file.split('.jpg')[0])
+                if not os.path.exists(json_folder): os.makedirs(json_folder)
+                json_file_path = os.path.join(json_folder, json_filename)
                 with open(json_file_path, 'w') as outfile:
                     outfile.write(json_string)
 
-
-
-
-
-# inference image get multiple feature maps
-# store these feature map into each folder naming by image
-# decide how to utilise them

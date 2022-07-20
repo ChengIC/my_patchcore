@@ -10,6 +10,25 @@ import os
 from PIL import Image
 from torchvision import transforms
 
+def normalize_tensor(vector):
+
+    min_v = torch.min(vector)
+    range_v = torch.max(vector) - min_v
+    if range_v > 0:
+        vector -= min_v
+        vector = vector / range_v
+    else:
+        vector = torch.zeros(vector.size())
+
+    return vector
+
+def count_pixels(pixel_np_list):
+    count_dict = {}
+    for th in np.arange(0, 1, 0.05):
+        count_hi = (pixel_np_list>=th).sum()
+        count_dict[th] = int(count_hi)
+    print (count_dict)
+    return count_dict
 
 
 def load_model_from_dir(model_path):
@@ -56,12 +75,9 @@ def load_image_to_tensor_cpu(img_path, config_data):
 
 class InferenceCore():
 
-    def __init__(self, model_path=None, run_dir=None) :
+    def __init__(self, model_path=None) :
         self.model_path = model_path
         self.model_name = self.model_path.split('/')[-1]
-        self.run_dir = run_dir
-        if not os.path.exists(self.run_dir):
-            os.makedirs(self.run_dir)
 
         # begin loading patch-core from model path
         self.model, self.model_paras, self.config_data = load_model_from_dir(model_path)
@@ -70,12 +86,13 @@ class InferenceCore():
         # for testing and insight
         
         test_img_tensor, HeatMap_Size = load_image_to_tensor_cpu(img_path, self.config_data)
-        img_lvl_anom_score, pxl_lvl_anom_score = self.model.inference (test_img_tensor, self.model_paras, HeatMap_Size)
-
+        _, pxl_lvl_anom_score = self.model.inference (test_img_tensor, self.model_paras, HeatMap_Size)
+        pxl_lvl_anom_score_normalised = normalize_tensor(pxl_lvl_anom_score)
+        
         result  = {
             'img_path': img_path,
-            'img_score':img_lvl_anom_score.tolist(),
+            'count_pixels': count_pixels(pxl_lvl_anom_score_normalised.numpy()),
             'pixel_score':pxl_lvl_anom_score.tolist(),
         }
 
-        return result, self.run_dir
+        return result
