@@ -47,8 +47,8 @@ if __name__ == "__main__":
     exp_dir = './FinalCore/exp/' + time_stamp
     config_dir = exp_dir + '/config'
     model_dir = exp_dir + '/models'
-    runs_dir = exp_dir + '/runs'
-    # runs_dir = './media/backup/exp/{}/runs'.format(time_stamp)  # save to back up drive due to limited  
+    # runs_dir = exp_dir + '/runs'
+    runs_dir = '/media/rc/backup/exp/{}/runs'.format(time_stamp)  # save to back up drive due to limited  
 
     if not os.path.exists(exp_dir): os.makedirs(exp_dir)
     if not os.path.exists(config_dir): os.makedirs(config_dir)
