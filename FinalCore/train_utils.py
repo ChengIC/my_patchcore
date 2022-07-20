@@ -14,12 +14,9 @@ from torchvision import transforms
 
 
 class TrainPatchCore ():
-    def __init__(self, config_dir, save_name='models'):
+    def __init__(self, config_dir, model_dir):
         self.config_dir = config_dir
-        self.model_dir = os.path.join ('/'.join(self.config_dir.split('/')[:-1]), save_name)
-        # init model dir
-        if not os.path.exists(self.model_dir):
-            os.makedirs(self.model_dir)
+        self.model_dir = model_dir
 
     def genDataSet(self,config_data):
 
