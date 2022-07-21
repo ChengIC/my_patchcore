@@ -24,7 +24,7 @@ def normalize_tensor(vector):
 
 def count_pixels(pixel_np_list):
     count_dict = {}
-    for th in np.arange(0, 1, 0.05):
+    for th in [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85]:
         count_hi = (pixel_np_list>=th).sum()
         count_dict[th] = int(count_hi)
     return count_dict
