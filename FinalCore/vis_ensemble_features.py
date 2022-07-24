@@ -22,19 +22,30 @@ def get_sum_counts(pixels_information):
         sum_list.append(sum_count)
     return sum_list
 
-def filter_half_median(rank_list):
-    median_val = get_median_val(rank_list)
+# def filter_half_median(rank_list):
+#     median_val = get_median_val(rank_list)
+#     filtered_list = []
+#     for r in rank_list:
+#         if r >= median_val:
+#             filtered_list.append(r)
+#         else:
+#             filtered_list.append(0)
+#     return filtered_list
+
+def filter_quantile(rank_list,th=0.75):
+    th_val = np.quantile(rank_list, th)
     filtered_list = []
     for r in rank_list:
-        if r >= median_val:
+        if r >= th_val:
             filtered_list.append(r)
         else:
             filtered_list.append(0)
     return filtered_list
 
+
 def assign_weights_by_small(rank_list):
     rev_rank_list = [min(rank_list)/float(i) for i in rank_list]
-    rev_rank_list = filter_half_median(rev_rank_list)
+    rev_rank_list = filter_quantile(rev_rank_list)
     norm = [(float(i)-min(rev_rank_list))/(max(rev_rank_list)-min(rev_rank_list)) for i in rev_rank_list]
     adjust = [float(i)/sum(norm) for i in norm]
     return adjust
