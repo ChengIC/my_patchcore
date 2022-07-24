@@ -77,7 +77,7 @@ if __name__ == "__main__":
     ##### runs multi-patchcores  ###########
     ########################################
     obj_dir = './datasets/full_body/test/objs'
-    img_files = os.listdir(obj_dir)[0:10]
+    img_files = os.listdir(obj_dir)
 
     for single_model_dir in os.listdir(model_dir):
         model_path = os.path.join(model_dir, single_model_dir)
