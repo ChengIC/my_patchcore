@@ -6,6 +6,8 @@ from tqdm import tqdm
 import shutil
 from train_utils import *
 from inference_utils import *
+from vis_ensemble_features import *
+
 # generate configure files
 def genConfigFile(config_dir, img_dir, scale=1, info='front', num_of_imgs=10):
     
@@ -48,12 +50,14 @@ if __name__ == "__main__":
     config_dir = exp_dir + '/config'
     model_dir = exp_dir + '/models'
     runs_dir = exp_dir + '/runs'
+    vis_dir = exp_dir + '/vis'
     # runs_dir = '/media/rc/backup/exp/{}/runs'.format(time_stamp)  # save to back up drive due to limited  
 
     if not os.path.exists(exp_dir): os.makedirs(exp_dir)
     if not os.path.exists(config_dir): os.makedirs(config_dir)
     if not os.path.exists(model_dir): os.makedirs(model_dir)
     if not os.path.exists(runs_dir): os.makedirs(runs_dir)
+    if not os.path.exists(vis_dir): os.makedirs(vis_dir)
 
     ########################################
     ##### generate config files ############
@@ -90,4 +94,17 @@ if __name__ == "__main__":
                 json_file_path = os.path.join(json_folder, json_filename)
                 with open(json_file_path, 'w') as outfile:
                     outfile.write(json_string)
+    
+
+    ########################################
+    ########### vis avg results  ###########
+    ########################################
+    for img_run_dir in os.listdir(runs_dir):
+        img_run_path = os.path.join(runs_dir, img_run_dir)
+        if os.path.isdir(img_run_path):
+            vis_exp = VisEnsembleFeature(obj_dir=obj_dir, 
+                                        annotation_dir='./datasets/full_body/Annotations',
+                                        img_run_path=img_run_path, 
+                                        vis_dir=vis_dir)
+            vis_exp.save_opt_fv()
 
