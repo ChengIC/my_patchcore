@@ -11,7 +11,7 @@ import xml.etree.ElementTree as ET
 import matplotlib.pyplot as plt
 from PIL import Image
 import io
-import torch
+from matplotlib.pyplot import figure
 
 def getBBox(annotation_dir, img_id):
     xml_filePath = os.path.join (annotation_dir, img_id + '.xml')
@@ -100,33 +100,17 @@ def mean_size_folder(training_folder):
     height_list = np.array(height_list)
     return [int(np.mean(height_list)),int(np.mean(width_list))]
 
-def renderFeatureMap(pxl_lvl_anom_score):
+def renderFeatureMap(pxl_lvl_anom_score,sample_img):
     score_range = pxl_lvl_anom_score.min(), pxl_lvl_anom_score.max()
     fmap_img = pred_to_img(pxl_lvl_anom_score, score_range)
+    
+    figure(figsize=(10, 10), dpi=200)
+    plt.imshow(sample_img)
     plt.imshow(fmap_img, cmap="jet", alpha=0.5)
-    plt.axis('off')
+    plt.axis('off');
+    
     buf = io.BytesIO()
     plt.savefig(buf, format='png', bbox_inches='tight', pad_inches=0, transparent=True)
     overlay_img = Image.open(buf)
-    return np.array(overlay_img)
-
-def returnColorFeature(pixel_score):
-    fmap_tensor = torch.tensor(pixel_score)
-    score_range = fmap_tensor.min(), fmap_tensor.max()
-    fmap_img = pred_to_img(fmap_tensor, score_range)
-    fmap_img = fmap_img[:,:,0]
-
-    cmap = plt.get_cmap('jet')
-    rgba_img = cmap(fmap_img)*255
-    rgb_img = rgba_img[:,:,0:3]
-    return rgb_img
-
-def returnNormalizeMap(pixel_score):
-    fmap_tensor = torch.tensor(pixel_score)
-    score_range = fmap_tensor.min(), fmap_tensor.max()
-    fmap_img = pred_to_img(fmap_tensor, score_range)
-    return fmap_img
-
-
-def chunkify(lst,n):
-    return [lst[i::n] for i in range(n)]
+    plt.clf()
+    return np.array(overlay_img), fmap_img
