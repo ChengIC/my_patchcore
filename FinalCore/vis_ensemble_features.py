@@ -130,8 +130,8 @@ class VisEnsembleFeature():
 
 if __name__ == "__main__":
 
-    run_dir = './FinalCore/exp/2022_07_21_13_18_01/runs'
-    vis_dir = './FinalCore/exp/2022_07_21_13_18_01/vis'
+    run_dir = '/media/rc/backup/exp/2022_07_21_21_02_52/runs'
+    vis_dir = '/media/rc/backup/exp/2022_07_21_21_02_52/vis'
     if not os.path.exists(vis_dir): os.makedirs(vis_dir)
 
     for img_run_dir in os.listdir(run_dir):
