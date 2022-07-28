@@ -1,4 +1,4 @@
-from inference_utils import *
+from my_utils.inference_utils import *
 import numpy as np
 import matplotlib.pyplot as plt
 import io

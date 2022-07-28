@@ -1,5 +1,5 @@
 
-from ran_utils import *
+from my_utils.ran_utils import *
 import os 
 import json
 from models import PatchCore

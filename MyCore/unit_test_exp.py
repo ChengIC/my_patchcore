@@ -1,12 +1,13 @@
 
-from ran_utils import *
+from my_utils.ran_utils import *
 import random
 import json
 from tqdm import tqdm
 import shutil
-from train_utils import *
-from inference_utils import *
-from vis_ensemble_features import *
+from my_utils.train_utils import *
+from my_utils.inference_utils import *
+from my_utils.vis_ensemble_features import *
+from my_utils.self_test_utils import *
 
 # generate configure files
 def genConfigFile(config_dir, img_dir, scale=1, info='front', num_of_imgs=10):
@@ -39,25 +40,33 @@ if __name__ == "__main__":
     ######### ensemble settings ############
     ########################################
     scale = 0.1
-    num_imgs = 2
-    models_num = 3
+    num_imgs = 10
+    models_num = 2
     
     ########################################
     ############### exp folders ############
     ########################################
     time_stamp = genTimeStamp()
-    exp_dir = './FinalCore/exp/' + time_stamp
+    exp_dir = './MyCore/exp/' + time_stamp
+
     config_dir = exp_dir + '/config'
     model_dir = exp_dir + '/models'
-    runs_dir = exp_dir + '/runs'
-    vis_dir = exp_dir + '/vis'
-    # runs_dir = '/media/rc/backup/exp/{}/runs'.format(time_stamp)  # save to back up drive due to limited  
 
-    if not os.path.exists(exp_dir): os.makedirs(exp_dir)
-    if not os.path.exists(config_dir): os.makedirs(config_dir)
-    if not os.path.exists(model_dir): os.makedirs(model_dir)
-    if not os.path.exists(runs_dir): os.makedirs(runs_dir)
-    if not os.path.exists(vis_dir): os.makedirs(vis_dir)
+    self_test_dir = exp_dir  + '/self_test'
+
+    new_config_dir = exp_dir + '/new_config'
+    new_model_dir = exp_dir + '/new_models'
+
+    runs_dir = exp_dir + '/runs'
+    # runs_dir = '/media/rc/backup/exp/{}/runs'.format(time_stamp)  # save to back up drive due to limited  
+    vis_dir = exp_dir + '/vis'
+    
+
+    for dir in [config_dir, model_dir, self_test_dir, 
+                new_config_dir, new_model_dir, runs_dir, vis_dir]:
+        if not os.path.exists(dir): 
+            os.makedirs(dir)
+
 
     ########################################
     ##### generate config files ############
@@ -71,6 +80,35 @@ if __name__ == "__main__":
     ##### train multi-patchcores ###########
     ########################################
     train_session = TrainPatchCore(config_dir, model_dir).trainModel()
+
+    #######################################
+    ############# self-test  ##############
+    ######  generate new config files #####
+    #######################################
+    new_img_ids = {}
+    for single_model_dir in os.listdir(model_dir):
+        model_path = os.path.join(model_dir, single_model_dir)
+        if os.path.isdir(model_path): 
+            new_img_ids[single_model_dir] = self_test(model_path)
+    
+    # modfiy config file 
+    for config_file in os.listdir(config_dir):
+        with open(os.path.join(config_dir, config_file)) as json_file:
+            config_data = json.load(json_file)
+            
+            # replace new ids
+            config_data['img_ids'] = new_img_ids[config_file]
+
+            json_string = json.dumps(config_data)
+            json_file_path = os.path.join(new_config_dir, config_data['filename'])
+            with open(json_file_path, 'w') as outfile:
+                outfile.write(json_string)
+
+    ########################################
+    ##### train new multi-patchcores #######
+    ########################################
+    train_new_session = TrainPatchCore(new_config_dir, new_model_dir).trainModel()
+
 
 
     ########################################
