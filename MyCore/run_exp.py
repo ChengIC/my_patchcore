@@ -57,8 +57,8 @@ if __name__ == "__main__":
     new_config_dir = exp_dir + '/new_config'
     new_model_dir = exp_dir + '/new_models'
 
-    runs_dir = exp_dir + '/runs'
-    # runs_dir = '/media/rc/backup/exp/{}/runs'.format(time_stamp)  # save to back up drive due to limited  
+    # runs_dir = exp_dir + '/runs'
+    runs_dir = '/media/rc/backup/exp/{}/runs'.format(time_stamp)  # save to back up drive due to limited  
     vis_dir = exp_dir + '/vis'
     
 
