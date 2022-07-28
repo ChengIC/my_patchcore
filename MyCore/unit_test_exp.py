@@ -62,8 +62,8 @@ if __name__ == "__main__":
     vis_dir = exp_dir + '/vis'
     
 
-    for dir in [config_dir, model_dir, self_test_dir, 
-                new_config_dir, new_model_dir, runs_dir, vis_dir]:
+    for dir in [config_dir, model_dir, new_config_dir, 
+                new_model_dir, runs_dir, vis_dir]:
         if not os.path.exists(dir): 
             os.makedirs(dir)
 
@@ -97,7 +97,7 @@ if __name__ == "__main__":
             config_data = json.load(json_file)
             
             # replace new ids
-            config_data['img_ids'] = new_img_ids[config_file]
+            config_data['img_ids'] = new_img_ids[config_file.split('.')[0]]
 
             json_string = json.dumps(config_data)
             json_file_path = os.path.join(new_config_dir, config_data['filename'])
@@ -110,15 +110,14 @@ if __name__ == "__main__":
     train_new_session = TrainPatchCore(new_config_dir, new_model_dir).trainModel()
 
 
-
     ########################################
     ##### runs multi-patchcores  ###########
     ########################################
     obj_dir = './datasets/full_body/test/objs'
     img_files = os.listdir(obj_dir)[0:10]
 
-    for single_model_dir in os.listdir(model_dir):
-        model_path = os.path.join(model_dir, single_model_dir)
+    for single_model_dir in os.listdir(new_model_dir):
+        model_path = os.path.join(new_model_dir, single_model_dir)
         if os.path.isdir(model_path):
             print ('loading model from {}'.format(model_path))
             run_core = InferenceCore(model_path)
