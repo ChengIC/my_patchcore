@@ -1,5 +1,6 @@
 
 from my_utils.ran_utils import *
+import random
 import json
 from tqdm import tqdm
 import shutil
@@ -7,6 +8,7 @@ from my_utils.train_utils import *
 from my_utils.inference_utils import *
 from my_utils.vis_ensemble_features import *
 from my_utils.self_test_utils import *
+from my_utils.median_filter_dir import *
 from my_utils.config_utils import *
 from my_utils.summary_utils import *
 
@@ -16,7 +18,7 @@ if __name__ == "__main__":
     ######### ensemble settings ############
     ########################################
     # scale = 0.1
-    # num_imgs = 5
+    # num_imgs = 10
     # models_num = 2
     
     scale = 1
@@ -37,8 +39,8 @@ if __name__ == "__main__":
     new_config_dir = exp_dir + '/new_config'
     new_model_dir = exp_dir + '/new_models'
 
-    # runs_dir = exp_dir + '/runs'
-    runs_dir = '/media/rc/backup/exp/{}/runs'.format(time_stamp)  # save to back up drive due to limited  
+    runs_dir = exp_dir + '/runs'
+    # runs_dir = '/media/rc/backup/exp/{}/runs'.format(time_stamp)  # save to back up drive due to limited  
     vis_dir = exp_dir + '/vis'
     
 
@@ -47,11 +49,30 @@ if __name__ == "__main__":
         if not os.path.exists(dir): 
             os.makedirs(dir)
 
+    ########################################
+    ##### Apply median filter to images#####
+    ########################################
+    FILTER_DEGREE = 5
+
+    input_img_dir = './datasets/full_body/train/good'
+    input_obj_dir = './datasets/full_body/test/objs'
+
+    output_img_dir = './datasets/full_body/median_'+ str(FILTER_DEGREE) + '/train/good'
+    output_obj_dir = './datasets/full_body/median_' + str(FILTER_DEGREE) + '/test/objs'
+    if not os.path.exists(output_img_dir): os.makedirs(output_img_dir)
+    if not os.path.exists(output_obj_dir): os.makedirs(output_obj_dir)
+    
+    median_dir(input_img_dir, output_img_dir, filter_degree=FILTER_DEGREE)
+    median_dir(input_obj_dir, output_obj_dir, filter_degree=FILTER_DEGREE)
+
+    img_dir = output_img_dir
+    obj_dir = output_obj_dir
 
     ########################################
     ##### generate config files ############
     ########################################
-    img_dir = './datasets/full_body/train/good'
+
+
     for i in range(models_num):
         genConfigFile(config_dir, img_dir, scale=scale, info='front', num_of_imgs=num_imgs)
         genConfigFile(config_dir, img_dir, scale=scale, info='back', num_of_imgs=num_imgs)
@@ -93,7 +114,7 @@ if __name__ == "__main__":
     ########################################
     ##### runs multi-patchcores  ###########
     ########################################
-    obj_dir = './datasets/full_body/test/objs'
+    
     img_files = os.listdir(obj_dir)
 
     for single_model_dir in os.listdir(new_model_dir):

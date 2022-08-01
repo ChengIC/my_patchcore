@@ -15,13 +15,13 @@ if __name__ == "__main__":
     ########################################
     ######### ensemble settings ############
     ########################################
-    # scale = 0.1
-    # num_imgs = 5
-    # models_num = 2
+    scale = 0.1
+    num_imgs = 5
+    models_num = 2
     
-    scale = 1
-    num_imgs = 60
-    models_num = 15
+    # scale = 1
+    # num_imgs = 60
+    # models_num = 15
 
     ########################################
     ############### exp folders ############
@@ -37,8 +37,8 @@ if __name__ == "__main__":
     new_config_dir = exp_dir + '/new_config'
     new_model_dir = exp_dir + '/new_models'
 
-    # runs_dir = exp_dir + '/runs'
-    runs_dir = '/media/rc/backup/exp/{}/runs'.format(time_stamp)  # save to back up drive due to limited  
+    runs_dir = exp_dir + '/runs'
+    # runs_dir = '/media/rc/backup/exp/{}/runs'.format(time_stamp)  # save to back up drive due to limited  
     vis_dir = exp_dir + '/vis'
     
 
@@ -94,7 +94,7 @@ if __name__ == "__main__":
     ##### runs multi-patchcores  ###########
     ########################################
     obj_dir = './datasets/full_body/test/objs'
-    img_files = os.listdir(obj_dir)
+    img_files = os.listdir(obj_dir)[0:10]
 
     for single_model_dir in os.listdir(new_model_dir):
         model_path = os.path.join(new_model_dir, single_model_dir)
