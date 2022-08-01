@@ -10,7 +10,7 @@ from my_utils.vis_ensemble_features import *
 from my_utils.self_test_utils import *
 from my_utils.median_filter_dir import *
 from my_utils.config_utils import *
-
+from my_utils.summary_utils import *
 
 if __name__ == "__main__":
     
@@ -137,6 +137,7 @@ if __name__ == "__main__":
     ########################################
     ########### vis avg results  ###########
     ########################################
+    exp_summary = SummaryExp()
     for img_run_dir in os.listdir(runs_dir):
         img_run_path = os.path.join(runs_dir, img_run_dir)
         if os.path.isdir(img_run_path):
@@ -144,5 +145,11 @@ if __name__ == "__main__":
                                         annotation_dir='./datasets/full_body/Annotations',
                                         img_run_path=img_run_path, 
                                         vis_dir=vis_dir)
-            vis_exp.save_opt_fv()
+            fv, all_boxes, img_id = vis_exp.save_opt_fv()
+
+            # compute and update results
+            tp_score, fp_score = exp_summary.compute_score(fv, all_boxes)
+            exp_summary.update_data_frame (img_id, tp_score, fp_score)
+
+    exp_summary.write_exp_summary(exp_dir)
 

@@ -87,7 +87,7 @@ def add_bounding_boxes(img_id, sample_img, annotation_dir):
     all_boxes = getBBox(annotation_dir, img_id)
     for bb in all_boxes:
         image = cv2.rectangle(sample_img, (bb['xmin'], bb['ymin']), (bb['xmax'], bb['ymax']), (255, 255, 255), 5)
-    return image
+    return image, all_boxes
 
 class VisEnsembleFeature():
 
@@ -103,7 +103,7 @@ class VisEnsembleFeature():
     def compute_avg_fv_imgs(self):
         sample_img_path = os.path.join(self.obj_dir, self.img_id + '.jpg')
         sample_img = cv2.imread(sample_img_path)
-        sample_img = add_bounding_boxes(self.img_id, sample_img, self.annotation_dir)
+        sample_img, all_boxes = add_bounding_boxes(self.img_id, sample_img, self.annotation_dir)
         
 
         pixels_information = []
@@ -123,10 +123,10 @@ class VisEnsembleFeature():
                 all_fv_imgs.append(fv_img)
                 
         fv = avg_by_small(pixels_information, all_fv_imgs)
-        return fv, sample_img
+        return fv, sample_img, all_boxes
     
     def save_opt_fv(self):
-        fv, sample_img= self.compute_avg_fv_imgs()
+        fv, sample_img, all_boxes = self.compute_avg_fv_imgs()
         plt.imshow(sample_img)
         plt.imshow(fv, cmap="jet", alpha=0.5)
         plt.axis('off')
@@ -138,21 +138,7 @@ class VisEnsembleFeature():
         save_img_path = os.path.join(self.vis_dir, self.img_id + '.png')
         overlay_img.save(save_img_path)
 
-
-if __name__ == "__main__":
-
-    run_dir = '/media/rc/backup/exp/2022_07_21_21_02_52/runs'
-    vis_dir = '/media/rc/backup/exp/2022_07_21_21_02_52/vis'
-    if not os.path.exists(vis_dir): os.makedirs(vis_dir)
-
-    for img_run_dir in os.listdir(run_dir):
-        img_run_path = os.path.join(run_dir, img_run_dir)
-        if os.path.isdir(img_run_path):
-            vis_exp = VisEnsembleFeature(obj_dir='./datasets/full_body/test/objs', 
-                                        annotation_dir='./datasets/full_body/Annotations',
-                                        img_run_path=img_run_path, 
-                                        vis_dir=vis_dir)
-            vis_exp.save_opt_fv()
+        return fv, all_boxes, self.img_id
 
 
 

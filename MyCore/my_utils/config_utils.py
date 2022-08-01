@@ -1,7 +1,7 @@
 
 import json
 import random
-from ran_utils import *
+from my_utils.ran_utils import *
 
 
 random.seed(42)
