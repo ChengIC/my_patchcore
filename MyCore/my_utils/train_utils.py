@@ -90,10 +90,3 @@ class TrainPatchCore ():
 
         print('finish training')
         return self.model_dir
-
-if __name__ == "__main__":
-    print ('test model training')
-    config_dir = './TwoStageCore/exp/2022_07_01_10_55_40/config'
-    train_session = TrainPatchCore(config_dir)
-    model_dir = train_session.trainModel()
-    print (model_dir)
