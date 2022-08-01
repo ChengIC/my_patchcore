@@ -9,30 +9,7 @@ from my_utils.inference_utils import *
 from my_utils.vis_ensemble_features import *
 from my_utils.self_test_utils import *
 from my_utils.median_filter_dir import *
-
-# generate configure files
-def genConfigFile(config_dir, img_dir, scale=1, info='front', num_of_imgs=10):
-    
-    qualified_list = []
-    for img_file in os.listdir(img_dir):
-        if info in img_file:
-            qualified_list.append(img_file)
-    random.shuffle(qualified_list)
-    selected_list = random.choices(qualified_list, k=num_of_imgs)
-
-    config_data = {}
-    config_data['filename'] = '{}_{}.json'.format(unique_id(12), info)
-    config_data['img_folder'] = img_dir
-    config_data['img_ids'] = selected_list
-    config_data['scale'] = scale
-
-    json_string = json.dumps(config_data)
-    json_file_path = os.path.join(config_dir, config_data['filename'])
-    with open(json_file_path, 'w') as outfile:
-        outfile.write(json_string)
-
-    return config_dir
-
+from my_utils.config_utils import *
 
 
 if __name__ == "__main__":
@@ -40,10 +17,14 @@ if __name__ == "__main__":
     ########################################
     ######### ensemble settings ############
     ########################################
+    # scale = 0.1
+    # num_imgs = 10
+    # models_num = 2
+    
     scale = 1
     num_imgs = 60
     models_num = 15
-    
+
     ########################################
     ############### exp folders ############
     ########################################
