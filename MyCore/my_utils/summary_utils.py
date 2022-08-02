@@ -35,9 +35,9 @@ class SummaryExp():
         self.data_frame['tp_score'].append(tp_score)
         self.data_frame['fp_score'].append(fp_score)
 
-    def write_exp_summary(self, exp_dir):
+    def write_exp_summary(self, exp_dir, exp_info='summary'):
         summary_pd = pd.DataFrame.from_dict(self.data_frame)
-        csv_file_path = os.path.join (exp_dir,'summary.csv' )
+        csv_file_path = os.path.join (exp_dir, exp_info + '.csv' )
         summary_pd.to_csv(csv_file_path, index=False)
 
 

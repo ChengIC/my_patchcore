@@ -3,7 +3,7 @@ from my_utils.inference_utils import *
 from my_utils.vis_utils import *
 
 
-def self_test(model_path):
+def self_test(model_path, percentage=0.9):
     print ('loading model from {}'.format(model_path))
     run_core = InferenceCore(model_path)
 
@@ -23,7 +23,7 @@ def self_test(model_path):
     
     print ('filter inqualified image ids')
     good_ids = []
-    outlier  = np.quantile(val_lsit,0.9)
+    outlier  = np.quantile(val_lsit,percentage)
     for k in all_results_score:
         if all_results_score[k]< outlier:
             good_ids.append(k)

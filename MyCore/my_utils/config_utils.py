@@ -4,16 +4,16 @@ import random
 from my_utils.ran_utils import *
 
 
-random.seed(42)
+
 
 # generate configure files
-def genConfigFile(config_dir, img_dir, scale=1, info='front', num_of_imgs=10):
-    
+def genConfigFile(config_dir, img_dir, scale=1, info='front', num_of_imgs=10, seed_num=0):
+    random.seed(seed_num)
     qualified_list = []
     for img_file in os.listdir(img_dir):
         if info in img_file:
             qualified_list.append(img_file)
-    random.shuffle(qualified_list)
+
     selected_list = random.choices(qualified_list, k=num_of_imgs)
 
     config_data = {}
